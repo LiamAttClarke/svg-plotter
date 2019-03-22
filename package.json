@@ -1,0 +1,39 @@
+{
+  "name": "svgeo",
+  "version": "0.0.0",
+  "description": "Convert SVG files to GeoJSON",
+  "main": "dist/svgeo.js",
+  "scripts": {
+    "compile": "node ./node_modules/typescript/bin/tsc",
+    "test": "node ./node_modules/mocha/bin/mocha -r ts-node/register tests/**/*.spec.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LiamAttClarke/svgeo.git"
+  },
+  "author": "Liam Atticus Clarke",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/LiamAttClarke/svgeo/issues"
+  },
+  "homepage": "https://github.com/LiamAttClarke/svgeo#readme",
+  "dependencies": {
+    "projections": "^1.0.0",
+    "svg-path-parser": "^1.1.0",
+    "svgson": "^3.1.0",
+    "ya-svg-transform": "0.0.2"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.1.7",
+    "@types/chai-roughly": "^1.0.0",
+    "@types/geojson": "^7946.0.6",
+    "@types/mocha": "^5.2.6",
+    "@types/node": "^11.11.5",
+    "@types/svg-path-parser": "^1.1.0",
+    "chai": "^4.2.0",
+    "chai-roughly": "^1.0.0",
+    "mocha": "^6.0.2",
+    "ts-node": "^8.0.3",
+    "typescript": "^3.3.4000"
+  }
+}
