@@ -7,11 +7,12 @@ import Vector2 from "./Vector2";
 
 namespace SVGEO {
   export interface ConvertSVGOptions {
-    idMapper:FeatureIdMapper,
-    propertyMapper:FeaturePropertyMapper,
-    center:Coordinate,
-    scale:number, // TODO: Replace with metres wide
-    subdivideThreshold:number
+    idMapper?:FeatureIdMapper,
+    propertyMapper?:FeaturePropertyMapper,
+    center?:Coordinate,
+    scale?:number, // TODO: Replace with metres wide
+    subdivideThreshold?:number
+    // TODO: Add floating point precision option?
   }
 
   export interface SVGMetaData {
@@ -50,9 +51,13 @@ const transformers:{[key:string]:IVectorFeatureTransformer} = {
   path: pathTransformer
 };
 
-export async function convertSVG(input:string, options:SVGEO.ConvertSVGOptions):Promise<GeoJSON.FeatureCollection> {
+export async function convertSVG(input:string, options:SVGEO.ConvertSVGOptions = {}):Promise<GeoJSON.FeatureCollection> {
   // Set default options
-  options.subdivideThreshold = options.subdivideThreshold || 1;
+  options.idMapper = options.idMapper || (() => null);
+  options.propertyMapper = options.propertyMapper || (() => null);
+  options.center = options.center || { longitude: 0, latitude: 0 };
+  options.scale = options.scale || 1;
+  options.subdivideThreshold = options.subdivideThreshold || 5;
   // Parse svg
   const parsedSVG = await svgson.parse(input, { camelcase: true });
   // Set svg metadata
@@ -185,7 +190,7 @@ export function pathTransformer(input: svgson.SVGObject, svgMeta:SVGEO.SVGMetaDa
   pathCommands.forEach((pathCommand, i) => {
     const previousCommand = (i > 0) ? pathCommands[i - 1] : null;
     type LineCommand = svgPathParser.LineToCommand&svgPathParser.HorizontalLineToCommand&svgPathParser.VerticalLineToCommand;
-    if (<svgPathParser.MoveToCommand>pathCommand) {
+    if (pathCommand.code === "M") {
       const command = <svgPathParser.MoveToCommand>pathCommand;
       if (currentLineString.length === 1) {
         points.push(currentLineString[0]);
@@ -193,48 +198,39 @@ export function pathTransformer(input: svgson.SVGObject, svgMeta:SVGEO.SVGMetaDa
         lineStrings.push(currentLineString);
       }
       currentLineString = [svgPointToCoordinate(new Vector2(command.x, command.y), svgMeta, options)];
-    } else if (<LineCommand>pathCommand) {
+    } else if (["L", "V", "H"].indexOf(pathCommand.code) !== -1) {
       const command = <LineCommand>pathCommand;
       currentLineString.push(svgPointToCoordinate(new Vector2(command.x, command.y), svgMeta, options));
-    } else if (<svgPathParser.CurveToCommand>pathCommand) {
+    } else if (["C", "S"].indexOf(pathCommand.code) !== -1) {
       const command = <svgPathParser.CurveToCommand>pathCommand;
       const p0 = new Vector2((command as any).x0, (command as any).y0); // Type does not include x0 and y0
-      const p1 = new Vector2(command.x1, command.y1);
+      let p1:Vector2;
+      if (pathCommand.code === "C") {
+        p1 = new Vector2(command.x1, command.y1);
+      } else {
+        p1 = ["C", "S"].indexOf(previousCommand.code) !== -1 ? p0.add(p0.subtract(previousCurveHandle)) : p0;
+      }
       const p2 = new Vector2(command.x2, command.y2);
       const p3 = new Vector2(command.x, command.y);
-      const points = mathUtils.drawCurve((t:number) => mathUtils.pointOnCubicBezierCurve(p0, p1, p2, p3, t), options.subdivideThreshold)
+      const curvePoints = mathUtils.drawCurve((t:number) => mathUtils.pointOnCubicBezierCurve(p0, p1, p2, p3, t), options.subdivideThreshold)
         .map(p => svgPointToCoordinate(p, svgMeta, options));
-      currentLineString = currentLineString.concat(points);
+      currentLineString = currentLineString.concat(curvePoints);
       previousCurveHandle = p2;
-    } else if (<svgPathParser.SmoothCurveToCommand>pathCommand) {
-      const command = <svgPathParser.SmoothCurveToCommand>pathCommand;
-      const p0 = new Vector2((command as any).x0, (command as any).y0); // Type does not include x0 and y0
-      const p1 = previousCommand.code === 'C' || previousCommand.code === 'S' ? p0.add(p0.subtract(previousCurveHandle)) : p0;
-      const p2 = new Vector2(command.x2, command.y2);
-      const p3 = new Vector2(command.x, command.y);
-      const points = mathUtils.drawCurve((t:number) => mathUtils.pointOnCubicBezierCurve(p0, p1, p2, p3, t), options.subdivideThreshold)
-        .map(p => svgPointToCoordinate(p, svgMeta, options));
-      currentLineString = currentLineString.concat(points);
-      previousCurveHandle = p2;
-    } else if (<svgPathParser.QuadraticCurveToCommand>pathCommand) {
+    } else if (["Q", "T"].indexOf(pathCommand.code) !== -1) {
       const command = <svgPathParser.QuadraticCurveToCommand>pathCommand;
       const p0 = new Vector2((command as any).x0, (command as any).y0); // Type does not include x0 and y0
-      const p1 = new Vector2(command.x1, command.y1);
+      let p1:Vector2;
+      if (pathCommand.code === "Q") {
+        p1 = new Vector2(command.x1, command.y1);
+      } else {
+        p1 = ["Q", "T"].indexOf(previousCommand.code) !== -1 ? p0.add(p0.subtract(previousCurveHandle)) : p0;
+      }
       const p2 = new Vector2(command.x, command.y);
-      const points = mathUtils.drawCurve((t:number) => mathUtils.pointOnQuadraticBezierCurve(p0, p1, p2, t), options.subdivideThreshold)
+      const curvePoints = mathUtils.drawCurve((t:number) => mathUtils.pointOnQuadraticBezierCurve(p0, p1, p2, t), options.subdivideThreshold)
         .map(p => svgPointToCoordinate(p, svgMeta, options));
-      currentLineString = currentLineString.concat(points);
+      currentLineString = currentLineString.concat(curvePoints);
       previousCurveHandle = p1;
-    } else if (<svgPathParser.SmoothQuadraticCurveToCommand>pathCommand) {
-      const command = <svgPathParser.SmoothQuadraticCurveToCommand>pathCommand;
-      const p0 = new Vector2((command as any).x0, (command as any).y0); // Type does not include x0 and y0
-      const p1 = previousCommand.code === 'Q' || previousCommand.code === 'T' ? p0.add(p0.subtract(previousCurveHandle)) : p0;
-      const p2 = new Vector2(command.x, command.y);
-      const points = mathUtils.drawCurve((t:number) => mathUtils.pointOnQuadraticBezierCurve(p0, p1, p2, t), options.subdivideThreshold)
-        .map(p => svgPointToCoordinate(p, svgMeta, options));
-      currentLineString = currentLineString.concat(points);
-      previousCurveHandle = p1;
-    } else if (<svgPathParser.EllipticalArcCommand>pathCommand) {
+    } else if (pathCommand.code === "A") {
       const command = <svgPathParser.EllipticalArcCommand>pathCommand;
       const p0 = new Vector2((command as any).x0, (command as any).y0); // Type definition does not include x0 and y0
       const p1 = new Vector2(command.x, command.y);
@@ -243,10 +239,10 @@ export function pathTransformer(input: svgson.SVGObject, svgMeta:SVGEO.SVGMetaDa
       const xAxisRotation = -command.xAxisRotation;
       const largeArc = command.largeArc;
       const sweep = !command.sweep;
-      const points = mathUtils.drawCurve((t:number) => mathUtils.pointOnEllipticalArc(p0, p1, rx, ry, xAxisRotation, largeArc, sweep, t), options.subdivideThreshold)
+      const curvePoints = mathUtils.drawCurve((t:number) => mathUtils.pointOnEllipticalArc(p0, p1, rx, ry, xAxisRotation, largeArc, sweep, t), options.subdivideThreshold)
         .map(p => svgPointToCoordinate(p, svgMeta, options));
-      currentLineString = currentLineString.concat(points);
-    } else if (<svgPathParser.ClosePathCommand>pathCommand) {
+      currentLineString = currentLineString.concat(curvePoints);
+    } else if (pathCommand.code === "Z") {
       currentLineString.push(currentLineString[0]);
       polygons.push(currentLineString);
       currentLineString = [];
@@ -338,10 +334,16 @@ export function createFeature(geometry:GeoJSON.Geometry, id: string|number|null,
 }
 
 export function parseSVGPointsString(pointString:string):Vector2[] {
-  const matches = pointString.match(/\-?\d+(?:\.\d+)?\,\-?\d+(?:\.\d+)?/g);
+  // Reference: https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/points
   let points:Vector2[] = [];
+  const matches = pointString.match(/\-?\d+(?:\.\d+)?/g);
   if (matches) {
-    points = matches.map(m => Vector2.fromArray(m.split(',').map(c => parseFloat(c))));
+    for (let i = 0; i < matches.length; i += 2) {
+      points.push(new Vector2(
+        parseFloat(matches[i]),
+        parseFloat(matches[i + 1])
+      ));
+    }
   }
   return points;
 }
@@ -352,11 +354,16 @@ export function svgPointToCoordinate(point:Vector2, svgMeta:SVGEO.SVGMetaData, o
     const transformedPoint = svgTransformParser.transform(svgTransform).apply(point);
     point = new Vector2(transformedPoint.x, transformedPoint.y);
   }
-  // TODO: Account for aspect ratio that exceeds map bounds
-  const projectedCoord = mercator({
-    x: (point.x - svgMeta.width * 0.5) / svgMeta.width * svgMeta.aspect * options.scale,
-    y: (point.y - svgMeta.height * 0.5) / svgMeta.height * options.scale
-  });
+  // Normalize point to range [0,1] and apply scale
+  const halfWidth = svgMeta.width * 0.5;
+  const halfHeight = svgMeta.height * 0.5;
+  const normalizedPoint = new Vector2(
+    ((point.x - halfWidth) * options.scale + halfWidth) / svgMeta.width * svgMeta.aspect,
+    ((point.y - halfHeight) * options.scale + halfHeight) / svgMeta.height
+  );
+  // Apply mercator projection
+  const projectedCoord = mercator(normalizedPoint);
+  // Offset position from options.center
   return [
     options.center.longitude + projectedCoord.lon,
     options.center.latitude + projectedCoord.lat

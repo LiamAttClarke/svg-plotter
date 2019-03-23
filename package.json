@@ -4,8 +4,9 @@
   "description": "Convert SVG files to GeoJSON",
   "main": "dist/svgeo.js",
   "scripts": {
-    "compile": "node ./node_modules/typescript/bin/tsc",
-    "test": "node ./node_modules/mocha/bin/mocha -r ts-node/register tests/**/*.spec.ts"
+    "compile": "tsc",
+    "watch": "tsc -w",
+    "test": "ts-mocha -p tsconfig.json tests/**/*.spec.ts"
   },
   "repository": {
     "type": "git",
@@ -32,8 +33,9 @@
     "@types/svg-path-parser": "^1.1.0",
     "chai": "^4.2.0",
     "chai-roughly": "^1.0.0",
+    "geojson-validation": "^0.2.1",
     "mocha": "^6.0.2",
-    "ts-node": "^8.0.3",
+    "ts-mocha": "^6.0.0",
     "typescript": "^3.3.4000"
   }
 }
