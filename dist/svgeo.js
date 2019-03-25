@@ -53,12 +53,17 @@ var transformers = {
     path: pathTransformer
 };
 function convertSVG(input, options) {
+    if (options === void 0) { options = {}; }
     return __awaiter(this, void 0, void 0, function () {
         var parsedSVG, svgMeta, output;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    options.subdivideThreshold = options.subdivideThreshold || 1;
+                    options.idMapper = options.idMapper || (function () { return null; });
+                    options.propertyMapper = options.propertyMapper || (function () { return null; });
+                    options.center = options.center || { longitude: 0, latitude: 0 };
+                    options.scale = options.scale || 1;
+                    options.subdivideThreshold = options.subdivideThreshold || 5;
                     return [4, svgson.parse(input, { camelcase: true })];
                 case 1:
                     parsedSVG = _a.sent();
@@ -193,7 +198,7 @@ function pathTransformer(input, svgMeta, options) {
     var pathCommands = svgPathParser.makeAbsolute(svgPathParser.parseSVG(input.attributes.d));
     pathCommands.forEach(function (pathCommand, i) {
         var previousCommand = (i > 0) ? pathCommands[i - 1] : null;
-        if (pathCommand) {
+        if (pathCommand.code === "M") {
             var command = pathCommand;
             if (currentLineString.length === 1) {
                 points.push(currentLineString[0]);
@@ -203,66 +208,57 @@ function pathTransformer(input, svgMeta, options) {
             }
             currentLineString = [svgPointToCoordinate(new Vector2_1.default(command.x, command.y), svgMeta, options)];
         }
-        else if (pathCommand) {
+        else if (["L", "V", "H"].indexOf(pathCommand.code) !== -1) {
             var command = pathCommand;
             currentLineString.push(svgPointToCoordinate(new Vector2_1.default(command.x, command.y), svgMeta, options));
         }
-        else if (pathCommand) {
+        else if (["C", "S"].indexOf(pathCommand.code) !== -1) {
             var command = pathCommand;
             var p0_1 = new Vector2_1.default(command.x0, command.y0);
-            var p1_1 = new Vector2_1.default(command.x1, command.y1);
+            var p1_1;
+            if (pathCommand.code === "C") {
+                p1_1 = new Vector2_1.default(command.x1, command.y1);
+            }
+            else {
+                p1_1 = ["C", "S"].indexOf(previousCommand.code) !== -1 ? p0_1.add(p0_1.subtract(previousCurveHandle)) : p0_1;
+            }
             var p2_1 = new Vector2_1.default(command.x2, command.y2);
             var p3_1 = new Vector2_1.default(command.x, command.y);
-            var points_1 = mathUtils.drawCurve(function (t) { return mathUtils.pointOnCubicBezierCurve(p0_1, p1_1, p2_1, p3_1, t); }, options.subdivideThreshold)
+            var curvePoints = mathUtils.drawCurve(function (t) { return mathUtils.pointOnCubicBezierCurve(p0_1, p1_1, p2_1, p3_1, t); }, options.subdivideThreshold)
                 .map(function (p) { return svgPointToCoordinate(p, svgMeta, options); });
-            currentLineString = currentLineString.concat(points_1);
+            currentLineString = currentLineString.concat(curvePoints);
             previousCurveHandle = p2_1;
         }
-        else if (pathCommand) {
+        else if (["Q", "T"].indexOf(pathCommand.code) !== -1) {
             var command = pathCommand;
             var p0_2 = new Vector2_1.default(command.x0, command.y0);
-            var p1_2 = previousCommand.code === 'C' || previousCommand.code === 'S' ? p0_2.add(p0_2.subtract(previousCurveHandle)) : p0_2;
-            var p2_2 = new Vector2_1.default(command.x2, command.y2);
-            var p3_2 = new Vector2_1.default(command.x, command.y);
-            var points_2 = mathUtils.drawCurve(function (t) { return mathUtils.pointOnCubicBezierCurve(p0_2, p1_2, p2_2, p3_2, t); }, options.subdivideThreshold)
+            var p1_2;
+            if (pathCommand.code === "Q") {
+                p1_2 = new Vector2_1.default(command.x1, command.y1);
+            }
+            else {
+                p1_2 = ["Q", "T"].indexOf(previousCommand.code) !== -1 ? p0_2.add(p0_2.subtract(previousCurveHandle)) : p0_2;
+            }
+            var p2_2 = new Vector2_1.default(command.x, command.y);
+            var curvePoints = mathUtils.drawCurve(function (t) { return mathUtils.pointOnQuadraticBezierCurve(p0_2, p1_2, p2_2, t); }, options.subdivideThreshold)
                 .map(function (p) { return svgPointToCoordinate(p, svgMeta, options); });
-            currentLineString = currentLineString.concat(points_2);
-            previousCurveHandle = p2_2;
+            currentLineString = currentLineString.concat(curvePoints);
+            previousCurveHandle = p1_2;
         }
-        else if (pathCommand) {
+        else if (pathCommand.code === "A") {
             var command = pathCommand;
             var p0_3 = new Vector2_1.default(command.x0, command.y0);
-            var p1_3 = new Vector2_1.default(command.x1, command.y1);
-            var p2_3 = new Vector2_1.default(command.x, command.y);
-            var points_3 = mathUtils.drawCurve(function (t) { return mathUtils.pointOnQuadraticBezierCurve(p0_3, p1_3, p2_3, t); }, options.subdivideThreshold)
-                .map(function (p) { return svgPointToCoordinate(p, svgMeta, options); });
-            currentLineString = currentLineString.concat(points_3);
-            previousCurveHandle = p1_3;
-        }
-        else if (pathCommand) {
-            var command = pathCommand;
-            var p0_4 = new Vector2_1.default(command.x0, command.y0);
-            var p1_4 = previousCommand.code === 'Q' || previousCommand.code === 'T' ? p0_4.add(p0_4.subtract(previousCurveHandle)) : p0_4;
-            var p2_4 = new Vector2_1.default(command.x, command.y);
-            var points_4 = mathUtils.drawCurve(function (t) { return mathUtils.pointOnQuadraticBezierCurve(p0_4, p1_4, p2_4, t); }, options.subdivideThreshold)
-                .map(function (p) { return svgPointToCoordinate(p, svgMeta, options); });
-            currentLineString = currentLineString.concat(points_4);
-            previousCurveHandle = p1_4;
-        }
-        else if (pathCommand) {
-            var command = pathCommand;
-            var p0_5 = new Vector2_1.default(command.x0, command.y0);
-            var p1_5 = new Vector2_1.default(command.x, command.y);
+            var p1_3 = new Vector2_1.default(command.x, command.y);
             var rx_1 = command.rx;
             var ry_1 = command.ry;
             var xAxisRotation_1 = -command.xAxisRotation;
             var largeArc_1 = command.largeArc;
             var sweep_1 = !command.sweep;
-            var points_5 = mathUtils.drawCurve(function (t) { return mathUtils.pointOnEllipticalArc(p0_5, p1_5, rx_1, ry_1, xAxisRotation_1, largeArc_1, sweep_1, t); }, options.subdivideThreshold)
+            var curvePoints = mathUtils.drawCurve(function (t) { return mathUtils.pointOnEllipticalArc(p0_3, p1_3, rx_1, ry_1, xAxisRotation_1, largeArc_1, sweep_1, t); }, options.subdivideThreshold)
                 .map(function (p) { return svgPointToCoordinate(p, svgMeta, options); });
-            currentLineString = currentLineString.concat(points_5);
+            currentLineString = currentLineString.concat(curvePoints);
         }
-        else if (pathCommand) {
+        else if (pathCommand.code === "Z") {
             currentLineString.push(currentLineString[0]);
             polygons.push(currentLineString);
             currentLineString = [];
@@ -323,10 +319,14 @@ function createFeature(geometry, id, properties) {
 }
 exports.createFeature = createFeature;
 function parseSVGPointsString(pointString) {
-    var matches = pointString.match(/\-?\d+(?:\.\d+)?\,\-?\d+(?:\.\d+)?/g);
     var points = [];
+    var matches = pointString.match(/\-?\d+(?:\.\d+)?/g);
     if (matches) {
-        points = matches.map(function (m) { return Vector2_1.default.fromArray(m.split(',').map(function (c) { return parseFloat(c); })); });
+        for (var i = 0; i < matches.length; i += 2) {
+            if (i + 2 > matches.length)
+                break;
+            points.push(new Vector2_1.default(parseFloat(matches[i]), parseFloat(matches[i + 1])));
+        }
     }
     return points;
 }
@@ -336,10 +336,10 @@ function svgPointToCoordinate(point, svgMeta, options, svgTransform) {
         var transformedPoint = svgTransformParser.transform(svgTransform).apply(point);
         point = new Vector2_1.default(transformedPoint.x, transformedPoint.y);
     }
-    var projectedCoord = projections_1.mercator({
-        x: (point.x - svgMeta.width * 0.5) / svgMeta.width * svgMeta.aspect * options.scale,
-        y: (point.y - svgMeta.height * 0.5) / svgMeta.height * options.scale
-    });
+    var halfWidth = svgMeta.width * 0.5;
+    var halfHeight = svgMeta.height * 0.5;
+    var normalizedPoint = new Vector2_1.default(((point.x - halfWidth) * options.scale + halfWidth) / svgMeta.width * svgMeta.aspect, ((point.y - halfHeight) * options.scale + halfHeight) / svgMeta.height);
+    var projectedCoord = projections_1.mercator(normalizedPoint);
     return [
         options.center.longitude + projectedCoord.lon,
         options.center.latitude + projectedCoord.lat

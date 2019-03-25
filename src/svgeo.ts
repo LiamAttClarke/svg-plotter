@@ -5,38 +5,35 @@ import { mercator } from "projections";
 import * as mathUtils from "./math-utils";
 import Vector2 from "./Vector2";
 
-namespace SVGEO {
-  export interface ConvertSVGOptions {
-    idMapper?:FeatureIdMapper,
-    propertyMapper?:FeaturePropertyMapper,
-    center?:Coordinate,
-    scale?:number, // TODO: Replace with metres wide
-    subdivideThreshold?:number
-    // TODO: Add floating point precision option?
-  }
+export interface ConvertSVGOptions {
+  idMapper?:FeatureIdMapper,
+  propertyMapper?:FeaturePropertyMapper,
+  center?:Coordinate,
+  scale?:number, // TODO: Replace with metres wide
+  subdivideThreshold?:number
+  // TODO: Add floating point precision option?
+}
 
-  export interface SVGMetaData {
-    width:number,
-    height:number,
-    aspect:number
-  }
+export interface SVGMetaData {
+  width:number,
+  height:number
+}
 
-  export interface Coordinate {
-    latitude:number,
-    longitude:number
-  }
+export interface Coordinate {
+  latitude:number,
+  longitude:number
+}
 
-  export interface FeatureIdMapper {
-    (input:svgson.SVGObject):number|string;
-  }
+export interface FeatureIdMapper {
+  (input:svgson.SVGObject):number|string;
+}
 
-  export interface FeaturePropertyMapper {
-    (input:svgson.SVGObject):Object;
-  }
+export interface FeaturePropertyMapper {
+  (input:svgson.SVGObject):Object;
 }
 
 interface IVectorFeatureTransformer {
-  (input:svgson.SVGObject, svgMeta:SVGEO.SVGMetaData, options:SVGEO.ConvertSVGOptions):GeoJSON.Feature[];
+  (input:svgson.SVGObject, svgMeta:SVGMetaData, options:ConvertSVGOptions):GeoJSON.Feature[];
 }
 
 const transformers:{[key:string]:IVectorFeatureTransformer} = {
@@ -51,7 +48,7 @@ const transformers:{[key:string]:IVectorFeatureTransformer} = {
   path: pathTransformer
 };
 
-export async function convertSVG(input:string, options:SVGEO.ConvertSVGOptions = {}):Promise<GeoJSON.FeatureCollection> {
+export async function convertSVG(input:string, options:ConvertSVGOptions = {}):Promise<GeoJSON.FeatureCollection> {
   // Set default options
   options.idMapper = options.idMapper || (() => null);
   options.propertyMapper = options.propertyMapper || (() => null);
@@ -62,12 +59,13 @@ export async function convertSVG(input:string, options:SVGEO.ConvertSVGOptions =
   const parsedSVG = await svgson.parse(input, { camelcase: true });
   // Set svg metadata
   // TODO: Account for different width and height units other than px
-  const svgMeta:SVGEO.SVGMetaData = {
+  if (!parsedSVG.attributes.width || !parsedSVG.attributes.height) {
+    throw new Error("SVG is missing width and height attributes.");
+  }
+  const svgMeta:SVGMetaData = {
     width: parseFloat(parsedSVG.attributes.width),
-    height: parseFloat(parsedSVG.attributes.height),
-    aspect: 0
+    height: parseFloat(parsedSVG.attributes.height)
   };
-  svgMeta.aspect = svgMeta.width / svgMeta.height;
   // Convert SVG to GeoJSON
   const output:GeoJSON.FeatureCollection = {
     type: "FeatureCollection",
@@ -77,7 +75,7 @@ export async function convertSVG(input:string, options:SVGEO.ConvertSVGOptions =
   return output;
 }
 
-export function groupTransformer(input: svgson.SVGObject, svgMeta:SVGEO.SVGMetaData, options:SVGEO.ConvertSVGOptions):GeoJSON.Feature[] {
+export function groupTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData, options:ConvertSVGOptions):GeoJSON.Feature[] {
   let features:Array<GeoJSON.Feature> = []
   input.children.forEach(child => {
     const transform = transformers[child.name];
@@ -90,7 +88,7 @@ export function groupTransformer(input: svgson.SVGObject, svgMeta:SVGEO.SVGMetaD
   return features;
 }
 
-export function lineTransformer(input: svgson.SVGObject, svgMeta:SVGEO.SVGMetaData, options:SVGEO.ConvertSVGOptions):GeoJSON.Feature[] {
+export function lineTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData, options:ConvertSVGOptions):GeoJSON.Feature[] {
   const id = options.idMapper ? options.idMapper(input) : null;
   const properties = options.propertyMapper ? options.propertyMapper(input) : null;
   const geometry:GeoJSON.LineString = {
@@ -103,7 +101,7 @@ export function lineTransformer(input: svgson.SVGObject, svgMeta:SVGEO.SVGMetaDa
   return [createFeature(geometry, id, properties)];
 }
 
-export function rectTransformer(input: svgson.SVGObject, svgMeta:SVGEO.SVGMetaData, options:SVGEO.ConvertSVGOptions):GeoJSON.Feature[] {
+export function rectTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData, options:ConvertSVGOptions):GeoJSON.Feature[] {
   const x = parseFloat(input.attributes.x);
   const y = parseFloat(input.attributes.y);
   const width = parseFloat(input.attributes.width);
@@ -124,7 +122,7 @@ export function rectTransformer(input: svgson.SVGObject, svgMeta:SVGEO.SVGMetaDa
   return [createFeature(geometry, id, properties)];
 }
 
-export function polylineTransformer(input: svgson.SVGObject, svgMeta:SVGEO.SVGMetaData, options:SVGEO.ConvertSVGOptions):GeoJSON.Feature[] {
+export function polylineTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData, options:ConvertSVGOptions):GeoJSON.Feature[] {
   const features: GeoJSON.Feature[] = [];
   let points = parseSVGPointsString(input.attributes.points).map(p => svgPointToCoordinate(p, svgMeta, options));
   let geometry: GeoJSON.Geometry = null;
@@ -147,7 +145,7 @@ export function polylineTransformer(input: svgson.SVGObject, svgMeta:SVGEO.SVGMe
   return features;
 }
 
-export function polygonTransformer(input: svgson.SVGObject, svgMeta:SVGEO.SVGMetaData, options:SVGEO.ConvertSVGOptions):GeoJSON.Feature[] {
+export function polygonTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData, options:ConvertSVGOptions):GeoJSON.Feature[] {
   const points = parseSVGPointsString(input.attributes.points).map(p => svgPointToCoordinate(p, svgMeta, options));
   points.push(points[0]);
   const id = options.idMapper ? options.idMapper(input) : null;
@@ -159,7 +157,7 @@ export function polygonTransformer(input: svgson.SVGObject, svgMeta:SVGEO.SVGMet
   return [createFeature(geometry, id, properties)];
 }
 
-export function ellipseTransformer(input: svgson.SVGObject, svgMeta:SVGEO.SVGMetaData, options:SVGEO.ConvertSVGOptions):GeoJSON.Feature[] {
+export function ellipseTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData, options:ConvertSVGOptions):GeoJSON.Feature[] {
   const center = new Vector2(parseFloat(input.attributes.cx), parseFloat(input.attributes.cy));
   let rx = 0;
   let ry = 0;
@@ -180,7 +178,7 @@ export function ellipseTransformer(input: svgson.SVGObject, svgMeta:SVGEO.SVGMet
   return [createFeature(geometry, id, properties)];
 }
 
-export function pathTransformer(input: svgson.SVGObject, svgMeta:SVGEO.SVGMetaData, options:SVGEO.ConvertSVGOptions):GeoJSON.Feature[] {
+export function pathTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData, options:ConvertSVGOptions):GeoJSON.Feature[] {
   const polygons:number[][][] = [];
   const lineStrings:number[][][] = [];
   const points:number[][] = [];
@@ -339,6 +337,7 @@ export function parseSVGPointsString(pointString:string):Vector2[] {
   const matches = pointString.match(/\-?\d+(?:\.\d+)?/g);
   if (matches) {
     for (let i = 0; i < matches.length; i += 2) {
+      if (i + 2 > matches.length) break;
       points.push(new Vector2(
         parseFloat(matches[i]),
         parseFloat(matches[i + 1])
@@ -348,8 +347,9 @@ export function parseSVGPointsString(pointString:string):Vector2[] {
   return points;
 }
 
-export function svgPointToCoordinate(point:Vector2, svgMeta:SVGEO.SVGMetaData, options:SVGEO.ConvertSVGOptions, svgTransform?:string):GeoJSON.Position {
+export function svgPointToCoordinate(point:Vector2, svgMeta:SVGMetaData, options:ConvertSVGOptions, svgTransform?:string):GeoJSON.Position {
   // Apply SVG Transform
+  // TODO: Account for nested transforms D:
   if (svgTransform) {
     const transformedPoint = svgTransformParser.transform(svgTransform).apply(point);
     point = new Vector2(transformedPoint.x, transformedPoint.y);
@@ -357,9 +357,10 @@ export function svgPointToCoordinate(point:Vector2, svgMeta:SVGEO.SVGMetaData, o
   // Normalize point to range [0,1] and apply scale
   const halfWidth = svgMeta.width * 0.5;
   const halfHeight = svgMeta.height * 0.5;
+  const aspect = svgMeta.width / svgMeta.height;
   const normalizedPoint = new Vector2(
-    ((point.x - halfWidth) * options.scale + halfWidth) / svgMeta.width * svgMeta.aspect,
-    ((point.y - halfHeight) * options.scale + halfHeight) / svgMeta.height
+    mathUtils.clamp(((point.x - halfWidth) * options.scale + halfWidth) / svgMeta.width * aspect, 0, 1),
+    mathUtils.clamp(((point.y - halfHeight) * options.scale + halfHeight) / svgMeta.height, 0, 1)
   );
   // Apply mercator projection
   const projectedCoord = mercator(normalizedPoint);
