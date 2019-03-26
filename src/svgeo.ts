@@ -6,11 +6,11 @@ import * as mathUtils from "./math-utils";
 import Vector2 from "./Vector2";
 
 export interface ConvertSVGOptions {
-  idMapper?:FeatureIdMapper,
-  propertyMapper?:FeaturePropertyMapper,
   center?:Coordinate,
   scale?:number, // TODO: Replace with metres wide
-  subdivideThreshold?:number
+  subdivideThreshold?:number,
+  idMapper?:FeatureIdMapper,
+  propertyMapper?:FeaturePropertyMapper
   // TODO: Add floating point precision option?
 }
 
@@ -50,8 +50,6 @@ const transformers:{[key:string]:IVectorFeatureTransformer} = {
 
 export async function convertSVG(input:string, options:ConvertSVGOptions = {}):Promise<GeoJSON.FeatureCollection> {
   // Set default options
-  options.idMapper = options.idMapper || (() => null);
-  options.propertyMapper = options.propertyMapper || (() => null);
   options.center = options.center || { longitude: 0, latitude: 0 };
   options.scale = options.scale || 1;
   options.subdivideThreshold = options.subdivideThreshold || 5;
