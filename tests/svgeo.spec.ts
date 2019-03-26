@@ -140,6 +140,8 @@ describe("svgeo", () => {
   });
 
   describe("lineTransformer", () => {
+    // Reference: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/line
+
     const svgLine = fs.readFileSync(path.join(__dirname, "files/line.svg"), "utf8");
 
     it("should convert a SVG Line to a GeoJSON LineString", async () => {
@@ -158,6 +160,8 @@ describe("svgeo", () => {
   });
 
   describe("rectTransformer", () => {
+    // Reference: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/rect
+
     const svgRect = fs.readFileSync(path.join(__dirname, "files/rect.svg"), "utf8");
 
     it("should convert a SVG Rect to a GeoJSON Polygon", async () => {
@@ -182,6 +186,8 @@ describe("svgeo", () => {
   });
 
   describe("polylineTransformer", () => {
+    // Reference: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/polyline
+
     const svgPolyline = fs.readFileSync(path.join(__dirname, "files/polyline.svg"), "utf8");
 
     it("should convert a SVG Polyline to a GeoJSON LineString", async () => {
@@ -210,6 +216,8 @@ describe("svgeo", () => {
   });
 
   describe("polygonTransformer", () => {
+    // Reference: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/polygon
+
     const svgPolygon = fs.readFileSync(path.join(__dirname, "files/polygon.svg"), "utf8");
 
     it("should convert a SVG Polygon to a GeoJSON Polygon", async () => {
@@ -240,6 +248,9 @@ describe("svgeo", () => {
   });
 
   describe("ellipseTransformer", () => {
+    // Circle reference: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/circle
+    // Ellipse reference: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/ellipse
+
     const svgCircle = fs.readFileSync(path.join(__dirname, "files/circle.svg"), "utf8");
     const svgEllipse = fs.readFileSync(path.join(__dirname, "files/ellipse.svg"), "utf8");
 
@@ -304,13 +315,13 @@ describe("svgeo", () => {
   });
 
   describe("pathTransformer", () => {
-
-
-
+    // Reference:  https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
+    // TODO: Add tests!
   });
 
   describe("groupTransformer", () => {
-
+    // Reference: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/g
+    // TODO: Add tests!
   });
 
   describe("convertSVG", () => {

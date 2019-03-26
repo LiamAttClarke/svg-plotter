@@ -76,6 +76,7 @@ export async function convertSVG(input:string, options:ConvertSVGOptions = {}):P
 }
 
 export function groupTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData, options:ConvertSVGOptions):GeoJSON.Feature[] {
+  // Reference: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/g
   let features:Array<GeoJSON.Feature> = []
   input.children.forEach(child => {
     const transform = transformers[child.name];
@@ -89,6 +90,7 @@ export function groupTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData, o
 }
 
 export function lineTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData, options:ConvertSVGOptions):GeoJSON.Feature[] {
+  // Reference: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/line
   const id = options.idMapper ? options.idMapper(input) : null;
   const properties = options.propertyMapper ? options.propertyMapper(input) : null;
   const geometry:GeoJSON.LineString = {
@@ -102,6 +104,7 @@ export function lineTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData, op
 }
 
 export function rectTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData, options:ConvertSVGOptions):GeoJSON.Feature[] {
+  // Reference: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/rect
   const x = parseFloat(input.attributes.x);
   const y = parseFloat(input.attributes.y);
   const width = parseFloat(input.attributes.width);
@@ -123,6 +126,7 @@ export function rectTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData, op
 }
 
 export function polylineTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData, options:ConvertSVGOptions):GeoJSON.Feature[] {
+  // Reference: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/polyline
   const features: GeoJSON.Feature[] = [];
   let points = parseSVGPointsString(input.attributes.points).map(p => svgPointToCoordinate(p, svgMeta, options));
   let geometry: GeoJSON.Geometry = null;
@@ -146,6 +150,7 @@ export function polylineTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData
 }
 
 export function polygonTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData, options:ConvertSVGOptions):GeoJSON.Feature[] {
+  // Reference: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/polygon
   const points = parseSVGPointsString(input.attributes.points).map(p => svgPointToCoordinate(p, svgMeta, options));
   points.push(points[0]);
   const id = options.idMapper ? options.idMapper(input) : null;
@@ -158,6 +163,8 @@ export function polygonTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData,
 }
 
 export function ellipseTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData, options:ConvertSVGOptions):GeoJSON.Feature[] {
+  // Circle reference: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/circle
+  // Ellipse reference: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/ellipse
   const center = new Vector2(parseFloat(input.attributes.cx), parseFloat(input.attributes.cy));
   let rx = 0;
   let ry = 0;
@@ -179,6 +186,7 @@ export function ellipseTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData,
 }
 
 export function pathTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData, options:ConvertSVGOptions):GeoJSON.Feature[] {
+  // Reference:  https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
   const polygons:number[][][] = [];
   const lineStrings:number[][][] = [];
   const points:number[][] = [];
