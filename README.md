@@ -1,15 +1,17 @@
 # SVGEO
 Convert SVG files to GeoJSON
 
-# Usage
+## Usage
 
 SVGEO can be used in both NodeJS and the browser.
 
 Install using npm:
 
-`npm install --save svgeo`
+```
+npm install --save svgeo
+```
 
-## Example
+### Example
 
 ```
 const svgeo = require('svgeo');
@@ -27,9 +29,9 @@ svgeo.convertSVG(svgCircle).then(geoJSONCircle => {
 });
 ```
 
-# API
+## API
 
-## svgeo.convertSVG
+### svgeo.convertSVG()
 
 `svgeo.convertSVG(svg[, options])`
 
@@ -37,7 +39,7 @@ Returns: `Promise<GeoJSON>`
 
 - `svg`
 
-  SVG string to be converted
+  SVG to be converted
 
   Type: String
 
@@ -65,7 +67,7 @@ Returns: `Promise<GeoJSON>`
 
 - `options.idMapper`
 
-  Function called for each GeoJSON Feature generated to set the Feature's Id. In the case of SVG Paths, multiple GeoJSON Features may be generated.
+  Function called for each GeoJSON Feature generated to set its Id. In the case of SVG Paths, multiple GeoJSON Features may be generated.
 
   Type: `Function(svgObject) -> String|Number|null`
 

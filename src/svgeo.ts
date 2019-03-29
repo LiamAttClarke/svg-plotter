@@ -52,7 +52,7 @@ export async function convertSVG(input:string, options:ConvertSVGOptions = {}):P
   // Set default options
   options.center = options.center || { longitude: 0, latitude: 0 };
   options.scale = options.scale || 1;
-  options.subdivideThreshold = options.subdivideThreshold || 5;
+  options.subdivideThreshold = Math.abs(options.subdivideThreshold) || 5;
   // Parse svg
   const parsedSVG = await svgson.parse(input, { camelcase: true });
   // Set svg metadata
