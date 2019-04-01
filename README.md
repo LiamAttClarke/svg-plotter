@@ -121,10 +121,6 @@ Returns: `Promise<GeoJSON>`
   - Replace scale option with width (in metres)
   - Add support for nested transforms
   - Add support for floating point percision option
-
-
-
-
-
-
-
+  - Create demo webpage
+  - Contribute missing @types typings
+  - Publish to NPM registry
