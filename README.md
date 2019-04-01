@@ -29,6 +29,21 @@ svgeo.convertSVG(svgCircle).then(geoJSONCircle => {
 });
 ```
 
+## CLI Usage
+
+```
+Usage: svgeo <input> [outputPath] [options]
+
+Options:
+  -V, --version                                   output the version number
+  -c, --center [center]                           Geographic coordinate to center the SVG geometry around. (default: 0,0)
+  -s, --scale [scale]                             Scale (default: 1)
+  -t, --subdivide-threshold [subdivideThreshold]  Angle in degrees for when to subdivide a continous curve into discreet points. Decrease this number for smoother curves. (Default: 5)
+  -p, --pretty                                    Pretty print output
+  -v, --verbose                                   Print all logs to console
+  -h, --help                                      output usage information
+```
+
 ## API
 
 ### svgeo.convertSVG()
@@ -45,7 +60,7 @@ Returns: `Promise<GeoJSON>`
 
 - `options.center`
 
-  Geographic coordinate to center the SVG geometry on.
+  Geographic coordinate to center the SVG geometry around.
 
   Type: `Coordinate`
 

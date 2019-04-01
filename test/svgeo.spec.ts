@@ -9,6 +9,7 @@ import * as svgson from "svgson";
 import * as GeoJSONValidation from "geojson-validation";
 import * as svgeo from "../src/svgeo";
 import Vector2 from "../src/Vector2";
+import { GeoJsonObject } from "geojson";
 
 chai.use(chaiRoughly);
 
@@ -84,7 +85,9 @@ describe("svgeo", () => {
 
   describe("svgPointToCoordinate", () => {
 
-    const svgMeta:svgeo.SVGMetaData = { width: 512, height: 512 };
+    // TODO: Add test case for svg with x/y and viewbox attributes
+
+    const svgMeta:svgeo.SVGMetaData = { x: 0, y: 0, width: 512, height: 512 };
 
     it("should return the point projected with a mercator projection", () => {
       const coord1 = svgeo.svgPointToCoordinate(new Vector2(256, 256), svgMeta, defaultConvertOptions);
@@ -147,6 +150,8 @@ describe("svgeo", () => {
     it("should convert a SVG Line to a GeoJSON LineString", async () => {
       const parsedSVG = await svgson.parse(svgLine, { camelcase: true });
       const svgMeta:svgeo.SVGMetaData = {
+        x: 0,
+        y: 0,
         width: parseFloat(parsedSVG.attributes.width),
         height: parseFloat(parsedSVG.attributes.height)
       };
@@ -154,7 +159,7 @@ describe("svgeo", () => {
       expect(features.length).to.equal(1);
       expect(GeoJSONValidation.isFeature(features[0])).to.be.true;
       expect(GeoJSONValidation.isLineString(features[0].geometry)).to.be.true;
-      expect(features[0].geometry.coordinates).to.deep.equal([[-90, 66.27715161480374], [90, -66.74715120228447]]);
+      expect((features[0].geometry as GeoJsonObject).coordinates).to.deep.equal([[-90, 66.27715161480374], [90, -66.74715120228447]]);
     });
 
   });
@@ -167,6 +172,8 @@ describe("svgeo", () => {
     it("should convert a SVG Rect to a GeoJSON Polygon", async () => {
       const parsedSVG = await svgson.parse(svgRect, { camelcase: true });
       const svgMeta:svgeo.SVGMetaData = {
+        x: 0,
+        y: 0,
         width: parseFloat(parsedSVG.attributes.width),
         height: parseFloat(parsedSVG.attributes.height)
       };
@@ -193,6 +200,8 @@ describe("svgeo", () => {
     it("should convert a SVG Polyline to a GeoJSON LineString", async () => {
       const parsedSVG = await svgson.parse(svgPolyline, { camelcase: true });
       const svgMeta:svgeo.SVGMetaData = {
+        x: 0,
+        y: 0,
         width: parseFloat(parsedSVG.attributes.width),
         height: parseFloat(parsedSVG.attributes.height)
       };
@@ -223,6 +232,8 @@ describe("svgeo", () => {
     it("should convert a SVG Polygon to a GeoJSON Polygon", async () => {
       const parsedSVG = await svgson.parse(svgPolygon, { camelcase: true });
       const svgMeta:svgeo.SVGMetaData = {
+        x: 0,
+        y: 0,
         width: parseFloat(parsedSVG.attributes.width),
         height: parseFloat(parsedSVG.attributes.height)
       };
@@ -257,6 +268,8 @@ describe("svgeo", () => {
     it("should convert a SVG Circle to a GeoJSON Polygon", async () => {
       const parsedSVG = await svgson.parse(svgCircle, { camelcase: true });
       const svgMeta:svgeo.SVGMetaData = {
+        x: 0,
+        y: 0,
         width: parseFloat(parsedSVG.attributes.width),
         height: parseFloat(parsedSVG.attributes.height)
       };
@@ -288,6 +301,8 @@ describe("svgeo", () => {
     it("should convert a SVG Ellipse to a GeoJSON Polygon", async () => {
       const parsedSVG = await svgson.parse(svgEllipse, { camelcase: true });
       const svgMeta:svgeo.SVGMetaData = {
+        x: 0,
+        y: 0,
         width: parseFloat(parsedSVG.attributes.width),
         height: parseFloat(parsedSVG.attributes.height)
       };
@@ -330,7 +345,6 @@ describe("svgeo", () => {
 
     it("should convert an SVG string to valid GeoJSON", async () => {
       const geoJSON = await svgeo.convertSVG(svg_shapes);
-      fs.writeFileSync("./test.json", JSON.stringify(geoJSON));
       expect(GeoJSONValidation.valid(geoJSON)).to.be.true;
     });
 
@@ -357,10 +371,10 @@ describe("svgeo", () => {
     it("should throw error if SVG does not have a width or height attribute", () => {
       return svgeo.convertSVG(svg_noDimensions)
         .then(() => {
-          throw new Error("Error was not thrown for missing SVG width/height attributes.")
+          throw new Error("Error was not thrown for missing SVG width/height/viewbox attributes.")
         })
         .catch(error => {
-          expect(error.message).to.equal("SVG is missing width and height attributes.");
+          expect(error.message).to.equal("SVG must have a viewbox or width/height attributes.");
         });
     });
 

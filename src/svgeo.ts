@@ -10,11 +10,14 @@ export interface ConvertSVGOptions {
   scale?:number, // TODO: Replace with metres wide
   subdivideThreshold?:number,
   idMapper?:FeatureIdMapper,
-  propertyMapper?:FeaturePropertyMapper
+  propertyMapper?:FeaturePropertyMapper,
+  verbose?:boolean
   // TODO: Add floating point precision option?
 }
 
 export interface SVGMetaData {
+  x:number,
+  y:number,
   width:number,
   height:number
 }
@@ -57,13 +60,26 @@ export async function convertSVG(input:string, options:ConvertSVGOptions = {}):P
   const parsedSVG = await svgson.parse(input, { camelcase: true });
   // Set svg metadata
   // TODO: Account for different width and height units other than px
-  if (!parsedSVG.attributes.width || !parsedSVG.attributes.height) {
-    throw new Error("SVG is missing width and height attributes.");
-  }
-  const svgMeta:SVGMetaData = {
-    width: parseFloat(parsedSVG.attributes.width),
-    height: parseFloat(parsedSVG.attributes.height)
+  let svgMeta:SVGMetaData = {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0
   };
+  if (parsedSVG.attributes.viewBox) {
+    const coords = parsedSVG.attributes.viewBox.split(' ');
+    svgMeta.x = parseFloat(coords[0]);
+    svgMeta.y = parseFloat(coords[1]);
+    svgMeta.width = parseFloat(coords[2]) - svgMeta.x;
+    svgMeta.height = parseFloat(coords[3]) - svgMeta.y;
+  } else if (parsedSVG.attributes.width && parsedSVG.attributes.height) {
+    svgMeta.x = parseFloat(parsedSVG.attributes.x) || 0;
+    svgMeta.y = parseFloat(parsedSVG.attributes.y) || 0;
+    svgMeta.width = parseFloat(parsedSVG.attributes.width) - svgMeta.x;
+    svgMeta.height = parseFloat(parsedSVG.attributes.height) - svgMeta.y;
+  } else {
+    throw new Error("SVG must have a viewbox or width/height attributes.");
+  }
   // Convert SVG to GeoJSON
   const output:GeoJSON.FeatureCollection = {
     type: "FeatureCollection",
@@ -81,7 +97,9 @@ export function groupTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData, o
     if (transform) {
       features.push(...transform(child, svgMeta, options));
     } else {
-      console.warn(`Skipping node, "${child.name}" is not supported.`);
+      if (options.verbose) {
+        warn(`Skipping node, "${child.name}" is not supported.`);
+      }
     }
   })
   return features;
@@ -365,8 +383,8 @@ export function svgPointToCoordinate(point:Vector2, svgMeta:SVGMetaData, options
   const halfHeight = svgMeta.height * 0.5;
   const aspect = svgMeta.width / svgMeta.height;
   const normalizedPoint = new Vector2(
-    mathUtils.clamp(((point.x - halfWidth) * options.scale + halfWidth) / svgMeta.width * aspect, 0, 1),
-    mathUtils.clamp(((point.y - halfHeight) * options.scale + halfHeight) / svgMeta.height, 0, 1)
+    mathUtils.clamp(((point.x - svgMeta.x - halfWidth) * options.scale + halfWidth) / svgMeta.width * aspect, 0, 1),
+    mathUtils.clamp(((point.y - svgMeta.y - halfHeight) * options.scale + halfHeight) / svgMeta.height, 0, 1)
   );
   // Apply mercator projection
   const projectedCoord = mercator(normalizedPoint);
@@ -375,4 +393,8 @@ export function svgPointToCoordinate(point:Vector2, svgMeta:SVGMetaData, options
     options.center.longitude + projectedCoord.lon,
     options.center.latitude + projectedCoord.lat
   ];
+}
+
+function warn(warning:string):void {
+  console.log(`(WARNING) ${warning}`);
 }

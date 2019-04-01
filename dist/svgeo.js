@@ -55,24 +55,38 @@ var transformers = {
 function convertSVG(input, options) {
     if (options === void 0) { options = {}; }
     return __awaiter(this, void 0, void 0, function () {
-        var parsedSVG, svgMeta, output;
+        var parsedSVG, svgMeta, coords, output;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    options.idMapper = options.idMapper || (function () { return null; });
-                    options.propertyMapper = options.propertyMapper || (function () { return null; });
                     options.center = options.center || { longitude: 0, latitude: 0 };
                     options.scale = options.scale || 1;
-                    options.subdivideThreshold = options.subdivideThreshold || 5;
+                    options.subdivideThreshold = Math.abs(options.subdivideThreshold) || 5;
                     return [4, svgson.parse(input, { camelcase: true })];
                 case 1:
                     parsedSVG = _a.sent();
                     svgMeta = {
-                        width: parseFloat(parsedSVG.attributes.width),
-                        height: parseFloat(parsedSVG.attributes.height),
-                        aspect: 0
+                        x: 0,
+                        y: 0,
+                        width: 0,
+                        height: 0
                     };
-                    svgMeta.aspect = svgMeta.width / svgMeta.height;
+                    if (parsedSVG.attributes.viewBox) {
+                        coords = parsedSVG.attributes.viewBox.split(' ');
+                        svgMeta.x = parseFloat(coords[0]);
+                        svgMeta.y = parseFloat(coords[1]);
+                        svgMeta.width = parseFloat(coords[2]) - svgMeta.x;
+                        svgMeta.height = parseFloat(coords[3]) - svgMeta.y;
+                    }
+                    else if (parsedSVG.attributes.width && parsedSVG.attributes.height) {
+                        svgMeta.x = parseFloat(parsedSVG.attributes.x) || 0;
+                        svgMeta.y = parseFloat(parsedSVG.attributes.y) || 0;
+                        svgMeta.width = parseFloat(parsedSVG.attributes.width) - svgMeta.x;
+                        svgMeta.height = parseFloat(parsedSVG.attributes.height) - svgMeta.y;
+                    }
+                    else {
+                        throw new Error("SVG must have a viewbox or width/height attributes.");
+                    }
                     output = {
                         type: "FeatureCollection",
                         features: transformers.svg(parsedSVG, svgMeta, options)
@@ -91,7 +105,9 @@ function groupTransformer(input, svgMeta, options) {
             features.push.apply(features, transform(child, svgMeta, options));
         }
         else {
-            console.warn("Skipping node, \"" + child.name + "\" is not supported.");
+            if (options.verbose) {
+                warn("Skipping node, \"" + child.name + "\" is not supported.");
+            }
         }
     });
     return features;
@@ -338,7 +354,8 @@ function svgPointToCoordinate(point, svgMeta, options, svgTransform) {
     }
     var halfWidth = svgMeta.width * 0.5;
     var halfHeight = svgMeta.height * 0.5;
-    var normalizedPoint = new Vector2_1.default(((point.x - halfWidth) * options.scale + halfWidth) / svgMeta.width * svgMeta.aspect, ((point.y - halfHeight) * options.scale + halfHeight) / svgMeta.height);
+    var aspect = svgMeta.width / svgMeta.height;
+    var normalizedPoint = new Vector2_1.default(mathUtils.clamp(((point.x - svgMeta.x - halfWidth) * options.scale + halfWidth) / svgMeta.width * aspect, 0, 1), mathUtils.clamp(((point.y - svgMeta.y - halfHeight) * options.scale + halfHeight) / svgMeta.height, 0, 1));
     var projectedCoord = projections_1.mercator(normalizedPoint);
     return [
         options.center.longitude + projectedCoord.lon,
@@ -346,4 +363,7 @@ function svgPointToCoordinate(point, svgMeta, options, svgTransform) {
     ];
 }
 exports.svgPointToCoordinate = svgPointToCoordinate;
+function warn(warning) {
+    console.log("(WARNING) " + warning);
+}
 //# sourceMappingURL=svgeo.js.map
