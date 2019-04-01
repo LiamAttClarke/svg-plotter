@@ -55,7 +55,7 @@ var transformers = {
 function convertSVG(input, options) {
     if (options === void 0) { options = {}; }
     return __awaiter(this, void 0, void 0, function () {
-        var parsedSVG, svgMeta, coords, output;
+        var parsedSVG, svgMeta, output;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -65,28 +65,7 @@ function convertSVG(input, options) {
                     return [4, svgson.parse(input, { camelcase: true })];
                 case 1:
                     parsedSVG = _a.sent();
-                    svgMeta = {
-                        x: 0,
-                        y: 0,
-                        width: 0,
-                        height: 0
-                    };
-                    if (parsedSVG.attributes.viewBox) {
-                        coords = parsedSVG.attributes.viewBox.split(' ');
-                        svgMeta.x = parseFloat(coords[0]);
-                        svgMeta.y = parseFloat(coords[1]);
-                        svgMeta.width = parseFloat(coords[2]) - svgMeta.x;
-                        svgMeta.height = parseFloat(coords[3]) - svgMeta.y;
-                    }
-                    else if (parsedSVG.attributes.width && parsedSVG.attributes.height) {
-                        svgMeta.x = parseFloat(parsedSVG.attributes.x) || 0;
-                        svgMeta.y = parseFloat(parsedSVG.attributes.y) || 0;
-                        svgMeta.width = parseFloat(parsedSVG.attributes.width) - svgMeta.x;
-                        svgMeta.height = parseFloat(parsedSVG.attributes.height) - svgMeta.y;
-                    }
-                    else {
-                        throw new Error("SVG must have a viewbox or width/height attributes.");
-                    }
+                    svgMeta = GetSVGMeta(parsedSVG);
                     output = {
                         type: "FeatureCollection",
                         features: transformers.svg(parsedSVG, svgMeta, options)
@@ -97,6 +76,32 @@ function convertSVG(input, options) {
     });
 }
 exports.convertSVG = convertSVG;
+function GetSVGMeta(parsedSVG) {
+    var svgMeta = {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0
+    };
+    if (parsedSVG.attributes.viewBox) {
+        var coords = parsedSVG.attributes.viewBox.split(' ');
+        svgMeta.x = parseFloat(coords[0]);
+        svgMeta.y = parseFloat(coords[1]);
+        svgMeta.width = parseFloat(coords[2]) - svgMeta.x;
+        svgMeta.height = parseFloat(coords[3]) - svgMeta.y;
+    }
+    else if (parsedSVG.attributes.width && parsedSVG.attributes.height) {
+        svgMeta.x = parseFloat(parsedSVG.attributes.x) || 0;
+        svgMeta.y = parseFloat(parsedSVG.attributes.y) || 0;
+        svgMeta.width = parseFloat(parsedSVG.attributes.width) - svgMeta.x;
+        svgMeta.height = parseFloat(parsedSVG.attributes.height) - svgMeta.y;
+    }
+    else {
+        throw new Error("SVG must have a viewbox or width/height attributes.");
+    }
+    return svgMeta;
+}
+exports.GetSVGMeta = GetSVGMeta;
 function groupTransformer(input, svgMeta, options) {
     var features = [];
     input.children.forEach(function (child) {
@@ -131,18 +136,30 @@ function rectTransformer(input, svgMeta, options) {
     var y = parseFloat(input.attributes.y);
     var width = parseFloat(input.attributes.width);
     var height = parseFloat(input.attributes.height);
-    var ring = [
-        svgPointToCoordinate(new Vector2_1.default(x, y), svgMeta, options),
-        svgPointToCoordinate(new Vector2_1.default(x + width, y), svgMeta, options),
-        svgPointToCoordinate(new Vector2_1.default(x + width, y + height), svgMeta, options),
-        svgPointToCoordinate(new Vector2_1.default(x, y + height), svgMeta, options)
-    ];
-    ring.push(ring[0]);
+    var rx = mathUtils.clamp(parseFloat(input.attributes.rx), 0, width * .5);
+    var ry = mathUtils.clamp(parseFloat(input.attributes.ry), 0, height * .5);
+    var ring = [];
+    if (rx || ry) {
+        var topLeftCorner = mathUtils.drawCurve(function (t) { return mathUtils.pointOnEllipse(new Vector2_1.default(x + rx, y + ry), rx, ry, t); }, options.subdivideThreshold, .5, .75);
+        var topRightCorner = mathUtils.drawCurve(function (t) { return mathUtils.pointOnEllipse(new Vector2_1.default(x + width - rx, y + ry), rx, ry, t); }, options.subdivideThreshold, .75, 1);
+        var bottomRightCorner = mathUtils.drawCurve(function (t) { return mathUtils.pointOnEllipse(new Vector2_1.default(x + width - rx, y + height - ry), rx, ry, t); }, options.subdivideThreshold, 0, .25);
+        var bottomLeftCorner = mathUtils.drawCurve(function (t) { return mathUtils.pointOnEllipse(new Vector2_1.default(x + rx, y + height - ry), rx, ry, t); }, options.subdivideThreshold, .25, .5);
+        var isMaxRadiusX = rx * 2 >= width;
+        var isMaxRadiusY = ry * 2 >= height;
+        ring.push.apply(ring, topLeftCorner.concat((isMaxRadiusX ? topRightCorner : topRightCorner.slice(1)), (isMaxRadiusY ? bottomRightCorner : bottomRightCorner.slice(1)), (isMaxRadiusX ? bottomLeftCorner : bottomLeftCorner.slice(1))));
+        if (!isMaxRadiusY) {
+            ring.push(ring[0]);
+        }
+    }
+    else {
+        ring.push(new Vector2_1.default(x, y), new Vector2_1.default(x + width, y), new Vector2_1.default(x + width, y + height), new Vector2_1.default(x, y + height));
+        ring.push(ring[0]);
+    }
     var id = options.idMapper ? options.idMapper(input) : null;
     var properties = options.propertyMapper ? options.propertyMapper(input) : null;
     var geometry = {
         type: "Polygon",
-        coordinates: [ring]
+        coordinates: [ring.map(function (p) { return svgPointToCoordinate(p, svgMeta, options); })]
     };
     return [createFeature(geometry, id, properties)];
 }

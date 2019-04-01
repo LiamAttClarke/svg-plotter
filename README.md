@@ -115,6 +115,13 @@ Returns: `Promise<GeoJSON>`
   }
   ```
 
+  ## TODO
+
+  - Add support for percentage units
+  - Replace scale option with width (in metres)
+  - Add support for nested transforms
+  - Add support for floating point percision option
+
 
 
 

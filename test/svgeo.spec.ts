@@ -149,12 +149,7 @@ describe("svgeo", () => {
 
     it("should convert a SVG Line to a GeoJSON LineString", async () => {
       const parsedSVG = await svgson.parse(svgLine, { camelcase: true });
-      const svgMeta:svgeo.SVGMetaData = {
-        x: 0,
-        y: 0,
-        width: parseFloat(parsedSVG.attributes.width),
-        height: parseFloat(parsedSVG.attributes.height)
-      };
+      const svgMeta = svgeo.GetSVGMeta(parsedSVG);
       const features = svgeo.lineTransformer(parsedSVG.children[0], svgMeta, defaultConvertOptions);
       expect(features.length).to.equal(1);
       expect(GeoJSONValidation.isFeature(features[0])).to.be.true;
@@ -171,22 +166,42 @@ describe("svgeo", () => {
 
     it("should convert a SVG Rect to a GeoJSON Polygon", async () => {
       const parsedSVG = await svgson.parse(svgRect, { camelcase: true });
-      const svgMeta:svgeo.SVGMetaData = {
-        x: 0,
-        y: 0,
-        width: parseFloat(parsedSVG.attributes.width),
-        height: parseFloat(parsedSVG.attributes.height)
-      };
-      const features = svgeo.rectTransformer(parsedSVG.children[0], svgMeta, defaultConvertOptions);
-      expect(features.length).to.equal(1);
-      expect(GeoJSONValidation.isFeature(features[0])).to.be.true;
-      expect(GeoJSONValidation.isPolygon(features[0].geometry)).to.be.true;
-      expect(features[0].geometry.coordinates).to.deep.equal([[
+      const svgMeta = svgeo.GetSVGMeta(parsedSVG);
+      const rect = svgeo.rectTransformer(parsedSVG.children[0], svgMeta, defaultConvertOptions)[0];
+      expect(GeoJSONValidation.isFeature(rect)).to.be.true;
+      expect(GeoJSONValidation.isPolygon(rect.geometry)).to.be.true;
+      expect(rect.geometry.coordinates).to.deep.equal([[
         [-90, 66.27715161480374],
         [90, 66.27715161480374],
         [90, -66.74715120228447],
         [-90, -66.74715120228447],
         [-90, 66.27715161480374]
+      ]]);
+    });
+
+    it("should convert a rounded SVG Rect to a GeoJSON Polygon", async () => {
+      const parsedSVG = await svgson.parse(svgRect, { camelcase: true });
+      const svgMeta = svgeo.GetSVGMeta(parsedSVG);
+      const rect = svgeo.rectTransformer(parsedSVG.children[1], svgMeta, defaultConvertOptions)[0];
+      expect(GeoJSONValidation.isFeature(rect)).to.be.true;
+      expect(GeoJSONValidation.isPolygon(rect.geometry)).to.be.true;
+      expect(rect.geometry.coordinates).to.deep.equal([[
+        [-90, 40.5332473574587],
+        [-83.40990257669732, 60.384755260031355],
+        [-76.11037722821453, 64.86079164263543],
+        [-67.5, 66.27715161480374],
+        [71.88953224536287, 65.92687480453861],
+        [76.11037722821452, 64.86079164263543],
+        [83.40990257669732, 60.38475526003137],
+        [90, 40.53324735745872],
+        [83.40990257669732, -60.9623401216464],
+        [76.11037722821452, -65.3571352883345],
+        [67.5, -66.74715120228447],
+        [-71.88953224536287, -66.40341607915138],
+        [-76.11037722821452, -65.3571352883345],
+        [-83.40990257669732, -60.9623401216464],
+        [-90, -41.423544535420085],
+        [-90, 40.5332473574587]
       ]]);
     });
 
@@ -199,12 +214,7 @@ describe("svgeo", () => {
 
     it("should convert a SVG Polyline to a GeoJSON LineString", async () => {
       const parsedSVG = await svgson.parse(svgPolyline, { camelcase: true });
-      const svgMeta:svgeo.SVGMetaData = {
-        x: 0,
-        y: 0,
-        width: parseFloat(parsedSVG.attributes.width),
-        height: parseFloat(parsedSVG.attributes.height)
-      };
+      const svgMeta = svgeo.GetSVGMeta(parsedSVG);
       const features = svgeo.polylineTransformer(parsedSVG.children[0], svgMeta, defaultConvertOptions);
       expect(features.length).to.equal(1);
       expect(GeoJSONValidation.isFeature(features[0])).to.be.true;
@@ -231,12 +241,7 @@ describe("svgeo", () => {
 
     it("should convert a SVG Polygon to a GeoJSON Polygon", async () => {
       const parsedSVG = await svgson.parse(svgPolygon, { camelcase: true });
-      const svgMeta:svgeo.SVGMetaData = {
-        x: 0,
-        y: 0,
-        width: parseFloat(parsedSVG.attributes.width),
-        height: parseFloat(parsedSVG.attributes.height)
-      };
+      const svgMeta = svgeo.GetSVGMeta(parsedSVG);
       const features = svgeo.polygonTransformer(parsedSVG.children[0], svgMeta, defaultConvertOptions);
       expect(features.length).to.equal(1);
       expect(GeoJSONValidation.isFeature(features[0])).to.be.true;
@@ -267,12 +272,7 @@ describe("svgeo", () => {
 
     it("should convert a SVG Circle to a GeoJSON Polygon", async () => {
       const parsedSVG = await svgson.parse(svgCircle, { camelcase: true });
-      const svgMeta:svgeo.SVGMetaData = {
-        x: 0,
-        y: 0,
-        width: parseFloat(parsedSVG.attributes.width),
-        height: parseFloat(parsedSVG.attributes.height)
-      };
+      const svgMeta = svgeo.GetSVGMeta(parsedSVG);
       const features = svgeo.ellipseTransformer(parsedSVG.children[0], svgMeta, defaultConvertOptions);
       expect(features.length).to.equal(1);
       expect(GeoJSONValidation.isFeature(features[0])).to.be.true;
@@ -300,12 +300,7 @@ describe("svgeo", () => {
 
     it("should convert a SVG Ellipse to a GeoJSON Polygon", async () => {
       const parsedSVG = await svgson.parse(svgEllipse, { camelcase: true });
-      const svgMeta:svgeo.SVGMetaData = {
-        x: 0,
-        y: 0,
-        width: parseFloat(parsedSVG.attributes.width),
-        height: parseFloat(parsedSVG.attributes.height)
-      };
+      const svgMeta = svgeo.GetSVGMeta(parsedSVG);
       const features = svgeo.ellipseTransformer(parsedSVG.children[0], svgMeta, defaultConvertOptions);
       expect(features.length).to.equal(1);
       expect(GeoJSONValidation.isFeature(features[0])).to.be.true;
@@ -345,7 +340,11 @@ describe("svgeo", () => {
 
     it("should convert an SVG string to valid GeoJSON", async () => {
       const geoJSON = await svgeo.convertSVG(svg_shapes);
-      expect(GeoJSONValidation.valid(geoJSON)).to.be.true;
+      expect(GeoJSONValidation.valid(geoJSON, (valid, errors) => {
+        if (errors.length) {
+          console.error(errors);
+        }
+      })).to.be.true;
     });
 
     it("should set feature id based on options.idMapper", async () => {
