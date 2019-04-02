@@ -60,7 +60,7 @@ function convertSVG(input, options) {
             switch (_a.label) {
                 case 0:
                     options.center = options.center || { longitude: 0, latitude: 0 };
-                    options.scale = options.scale || 1;
+                    options.width = options.width || 1000e3;
                     options.subdivideThreshold = Math.abs(options.subdivideThreshold) || 5;
                     return [4, svgson.parse(input, { camelcase: true })];
                 case 1:
@@ -369,10 +369,11 @@ function svgPointToCoordinate(point, svgMeta, options, svgTransform) {
         var transformedPoint = svgTransformParser.transform(svgTransform).apply(point);
         point = new Vector2_1.default(transformedPoint.x, transformedPoint.y);
     }
-    var halfWidth = svgMeta.width * 0.5;
-    var halfHeight = svgMeta.height * 0.5;
     var aspect = svgMeta.width / svgMeta.height;
-    var normalizedPoint = new Vector2_1.default(mathUtils.clamp(((point.x - svgMeta.x - halfWidth) * options.scale + halfWidth) / svgMeta.width * aspect, 0, 1), mathUtils.clamp(((point.y - svgMeta.y - halfHeight) * options.scale + halfHeight) / svgMeta.height, 0, 1));
+    var normalizedPoint = new Vector2_1.default((point.x - svgMeta.x) / svgMeta.width * aspect, (point.y - svgMeta.y) / svgMeta.height);
+    var scale = options.width / mathUtils.EARTH_CIRCUMFERENCE;
+    normalizedPoint = normalizedPoint.subtractScalar(.5).multiplyByScalar(scale).addScalar(.5);
+    normalizedPoint = new Vector2_1.default(mathUtils.clamp(normalizedPoint.x, 0, 1), mathUtils.clamp(normalizedPoint.y, 0, 1));
     var projectedCoord = projections_1.mercator(normalizedPoint);
     return [
         options.center.longitude + projectedCoord.lon,

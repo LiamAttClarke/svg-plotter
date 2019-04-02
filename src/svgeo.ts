@@ -6,13 +6,12 @@ import * as mathUtils from "./math-utils";
 import Vector2 from "./Vector2";
 
 export interface ConvertSVGOptions {
-  center?:Coordinate,
-  scale?:number, // TODO: Replace with metres wide
+  center?:mathUtils.Coordinate,
+  width?:number,
   subdivideThreshold?:number,
   idMapper?:FeatureIdMapper,
   propertyMapper?:FeaturePropertyMapper,
   verbose?:boolean
-  // TODO: Add floating point precision option?
 }
 
 export interface SVGMetaData {
@@ -20,11 +19,6 @@ export interface SVGMetaData {
   y:number,
   width:number,
   height:number
-}
-
-export interface Coordinate {
-  latitude:number,
-  longitude:number
 }
 
 export interface FeatureIdMapper {
@@ -54,17 +48,16 @@ const transformers:{[key:string]:IVectorFeatureTransformer} = {
 export async function convertSVG(input:string, options:ConvertSVGOptions = {}):Promise<GeoJSON.FeatureCollection> {
   // Set default options
   options.center = options.center || { longitude: 0, latitude: 0 };
-  options.scale = options.scale || 1;
+  options.width = options.width || 1000e3;
   options.subdivideThreshold = Math.abs(options.subdivideThreshold) || 5;
   // Parse svg
   const parsedSVG = await svgson.parse(input, { camelcase: true });
   const svgMeta = GetSVGMeta(parsedSVG);
   // Convert SVG to GeoJSON
-  const output:GeoJSON.FeatureCollection = {
+  let output:GeoJSON.FeatureCollection = {
     type: "FeatureCollection",
     features: transformers.svg(parsedSVG, svgMeta, options)
   };
-
   return output;
 }
 
@@ -404,13 +397,19 @@ export function svgPointToCoordinate(point:Vector2, svgMeta:SVGMetaData, options
     const transformedPoint = svgTransformParser.transform(svgTransform).apply(point);
     point = new Vector2(transformedPoint.x, transformedPoint.y);
   }
-  // Normalize point to range [0,1] and apply scale
-  const halfWidth = svgMeta.width * 0.5;
-  const halfHeight = svgMeta.height * 0.5;
+  // Normalize point to [0,1] range
   const aspect = svgMeta.width / svgMeta.height;
-  const normalizedPoint = new Vector2(
-    mathUtils.clamp(((point.x - svgMeta.x - halfWidth) * options.scale + halfWidth) / svgMeta.width * aspect, 0, 1),
-    mathUtils.clamp(((point.y - svgMeta.y - halfHeight) * options.scale + halfHeight) / svgMeta.height, 0, 1)
+  let normalizedPoint = new Vector2(
+    (point.x - svgMeta.x) / svgMeta.width * aspect,
+    (point.y - svgMeta.y) / svgMeta.height
+  );
+  // Scale point
+  const scale = options.width / mathUtils.EARTH_CIRCUMFERENCE;
+  normalizedPoint = normalizedPoint.subtractScalar(.5).multiplyByScalar(scale).addScalar(.5);
+  // Clamp point to [0,1] range
+  normalizedPoint = new Vector2(
+    mathUtils.clamp(normalizedPoint.x, 0, 1),
+    mathUtils.clamp(normalizedPoint.y, 0, 1)
   );
   // Apply mercator projection
   const projectedCoord = mercator(normalizedPoint);

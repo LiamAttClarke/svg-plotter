@@ -4,6 +4,14 @@ interface ICurve {
   (t:number): Vector2;
 }
 
+export const EARTH_RADIUS = 6371e3;
+export const EARTH_CIRCUMFERENCE = Math.PI * EARTH_RADIUS * 2;
+
+export interface Coordinate {
+  latitude:number,
+  longitude:number
+}
+
 export function clamp(n:number, min:number, max:number):number {
   return Math.min(Math.max(min, n), max);
 }
@@ -157,4 +165,17 @@ export function drawCurve(curve:ICurve, subdivideThreshold:number, start:number 
     positions = [startPoint, endPoint];
   }
   return positions;
+}
+
+export function haversineDistance(coordA:Coordinate, coordB:Coordinate) {
+  // Reference: https://en.wikipedia.org/wiki/Haversine_formula
+  const latARad = toRadians(coordA.latitude);
+  const latBRad = toRadians(coordB.latitude);
+  const latDeltaRad = latBRad - latARad;
+  const lonDeltaRad = toRadians(coordB.longitude - coordA.longitude);
+  const halfChordLengthSquared = Math.sin(latDeltaRad * .5) * Math.sin(latDeltaRad * .5) +
+                                 Math.cos(latARad) * Math.cos(latBRad) *
+                                 Math.sin(lonDeltaRad * .5) * Math.sin(lonDeltaRad * .5);
+  const angularDistance = 2 * Math.atan2(Math.sqrt(halfChordLengthSquared), Math.sqrt(1 - halfChordLengthSquared));
+  return EARTH_RADIUS * angularDistance;
 }

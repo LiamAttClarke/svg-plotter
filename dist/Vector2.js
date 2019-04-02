@@ -29,6 +29,12 @@ var Vector2 = (function () {
     Vector2.prototype.subtract = function (v) {
         return new Vector2(this.x - v.x, this.y - v.y);
     };
+    Vector2.prototype.addScalar = function (n) {
+        return new Vector2(this.x + n, this.y + n);
+    };
+    Vector2.prototype.subtractScalar = function (n) {
+        return new Vector2(this.x - n, this.y - n);
+    };
     Vector2.prototype.multiplyByScalar = function (n) {
         return new Vector2(this.x * n, this.y * n);
     };

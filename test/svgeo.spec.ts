@@ -8,17 +8,15 @@ import { mercator } from "projections";
 import * as svgson from "svgson";
 import * as GeoJSONValidation from "geojson-validation";
 import * as svgeo from "../src/svgeo";
+import * as mathUtils from "../src/math-utils";
 import Vector2 from "../src/Vector2";
 import { GeoJsonObject } from "geojson";
 
 chai.use(chaiRoughly);
 
 const defaultConvertOptions:svgeo.ConvertSVGOptions = {
-  scale: 1,
-  center: {
-    longitude: 0,
-    latitude: 0
-  },
+  center: { longitude: 0, latitude: 0 },
+  width: mathUtils.EARTH_CIRCUMFERENCE,
   subdivideThreshold: 10
 };
 
@@ -112,10 +110,10 @@ describe("svgeo", () => {
       expect(coord2[0]).to.equal(-180);
     });
 
-    it("should scale the point by options.scale", () => {
+    it("should scale coordinate to fit options.width", () => {
       const convertOptions:svgeo.ConvertSVGOptions = {
         center: { longitude: 0, latitude: 0 },
-        scale: 0.5
+        width: mathUtils.EARTH_CIRCUMFERENCE / 2
       };
       const coord1 = svgeo.svgPointToCoordinate(new Vector2(256, 256), svgMeta, convertOptions);
       const expectedCoord1 = mercator({ x: 0.5, y: 0.5 });
@@ -128,7 +126,8 @@ describe("svgeo", () => {
     it("should position the point relative to options.center", () => {
       const convertOptions:svgeo.ConvertSVGOptions = {
         center: { longitude: 15, latitude: 15 },
-        scale: 1
+        width: mathUtils.EARTH_CIRCUMFERENCE,
+        subdivideThreshold: 10
       };
       const coord1 = svgeo.svgPointToCoordinate(new Vector2(256, 256), svgMeta, convertOptions);
       const expectedCoord1 = mercator({ x: 0.5, y: 0.5 });

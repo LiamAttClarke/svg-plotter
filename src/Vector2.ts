@@ -37,6 +37,16 @@ export default class Vector2 {
     return new Vector2(this.x - v.x, this.y - v.y);
   }
 
+  // TODO: Add unit test
+  addScalar(n:number):Vector2 {
+    return new Vector2(this.x + n, this.y + n);
+  }
+
+  // TODO: Add unit test
+  subtractScalar(n:number):Vector2 {
+    return new Vector2(this.x - n, this.y - n);
+  }
+
   multiplyByScalar(n:number):Vector2 {
     return new Vector2(this.x * n, this.y * n);
   }

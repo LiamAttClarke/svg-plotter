@@ -37,7 +37,7 @@ Usage: svgeo <input> [outputPath] [options]
 Options:
   -V, --version                                   output the version number
   -c, --center [center]                           Geographic coordinate to center the SVG geometry around. (default: 0,0)
-  -s, --scale [scale]                             Scale (default: 1)
+  -w, --width [width]                             Width in metres (default: 1000e3 ie. 1000km)
   -t, --subdivide-threshold [subdivideThreshold]  Angle in degrees for when to subdivide a continous curve into discreet points. Decrease this number for smoother curves. (Default: 5)
   -p, --pretty                                    Pretty print output
   -v, --verbose                                   Print all logs to console
@@ -66,11 +66,13 @@ Returns: `Promise<GeoJSON>`
 
   Default: `{ longitude: 0, latitude: 0 }`
 
-- `options.scale`
+- `options.width`
+
+  The width in metres of the output geometry. SVG padding is included in the final output width.
 
   Type: `Number`
 
-  Default: `1`
+  Default: `1000e3`
 
 - `options.subdivideThreshold`
 
@@ -116,11 +118,10 @@ Returns: `Promise<GeoJSON>`
   ```
 
   ## TODO
-
+  - Add rotation option (compass heading)
   - Add support for percentage units
-  - Replace scale option with width (in metres)
   - Add support for nested transforms
-  - Add support for floating point percision option
+  - Add missing unit tests
   - Create demo webpage
   - Contribute missing @types typings
   - Publish to NPM registry

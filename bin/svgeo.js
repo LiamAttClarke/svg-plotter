@@ -9,7 +9,7 @@ commander
   .version("0.0.0")
   .usage("<input> [outputPath] [options]")
   .option("-c, --center [center]", "Geographic coordinate to center the SVG geometry around. (default: 0,0)")
-  .option("-s, --scale [scale]", "Scale (default: 1)")
+  .option("-w, --width [width]", "Width in metres (default: 1000e3 ie. 1000km)")
   .option("-t, --subdivide-threshold [subdivideThreshold]", "Angle in degrees for when to subdivide a continous curve into discreet points. Decrease this number for smoother curves. (Default: 5)")
   .option("-p, --pretty", "Pretty print output")
   .option("-v, --verbose", "Print all logs to console")
@@ -27,9 +27,9 @@ if (!fs.statSync(commander.args[0]).isFile() || path.extname(commander.args[0]) 
   process.exit(1);
 }
 
-if (commander.scale) {
-  const scale = parseFloat(commander.scale);
-  if (!scale || scale <= 0) {
+if (commander.width) {
+  const width = parseFloat(commander.width);
+  if (!width || width <= 0) {
     console.error("'scale' must be greater than zero.");
     process.exit(1);
   }
@@ -60,9 +60,9 @@ if (commander.args.length > 1) {
 
 const svg = fs.readFileSync(inputPath, "utf8");
 convertSVG(svg, {
-  scale: parseFloat(commander.scale) || 1,
   center: commander.center ? commander.center.split(",").map(coord => parseFloat(coord)) : null,
-  subdivideThreshold: parseFloat(commander.subdivideThreshold) || 1,
+  width: parseFloat(commander.width) || null,
+  subdivideThreshold: parseFloat(commander.subdivideThreshold) || null,
   verbose: commander.verbose
 }).then(geojson => {
   fs.writeFileSync(outputPath, JSON.stringify(geojson, null, commander.pretty ? 2 : 0));

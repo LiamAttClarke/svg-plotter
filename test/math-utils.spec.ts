@@ -249,3 +249,14 @@ describe("mathUtils", () => {
   })
 
 })
+
+describe("haversineDistance", () => {
+  // Reference: https://en.wikipedia.org/wiki/Haversine_formula
+
+  it("should return the great-cirlce distance (in metres) between two coordinates", () => {
+    const coordA = { latitude: 0, longitude: 0 };
+    const coordB = { latitude: 43.6529, longitude: -79.3849 };
+    expect(mathUtils.haversineDistance(coordA, coordB)).to.equal(9155865.3400348);
+  })
+
+});

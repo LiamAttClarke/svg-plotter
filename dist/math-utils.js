@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var Vector2_1 = require("./Vector2");
+exports.EARTH_RADIUS = 6371e3;
+exports.EARTH_CIRCUMFERENCE = Math.PI * exports.EARTH_RADIUS * 2;
 function clamp(n, min, max) {
     return Math.min(Math.max(min, n), max);
 }
@@ -119,4 +121,16 @@ function drawCurve(curve, subdivideThreshold, start, end) {
     return positions;
 }
 exports.drawCurve = drawCurve;
+function haversineDistance(coordA, coordB) {
+    var latARad = toRadians(coordA.latitude);
+    var latBRad = toRadians(coordB.latitude);
+    var latDeltaRad = latBRad - latARad;
+    var lonDeltaRad = toRadians(coordB.longitude - coordA.longitude);
+    var halfChordLengthSquared = Math.sin(latDeltaRad * .5) * Math.sin(latDeltaRad * .5) +
+        Math.cos(latARad) * Math.cos(latBRad) *
+            Math.sin(lonDeltaRad * .5) * Math.sin(lonDeltaRad * .5);
+    var angularDistance = 2 * Math.atan2(Math.sqrt(halfChordLengthSquared), Math.sqrt(1 - halfChordLengthSquared));
+    return exports.EARTH_RADIUS * angularDistance;
+}
+exports.haversineDistance = haversineDistance;
 //# sourceMappingURL=math-utils.js.map
