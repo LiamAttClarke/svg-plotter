@@ -213,6 +213,7 @@ function ellipseTransformer(input, svgMeta, options) {
     }
     var points = mathUtils.drawCurve(function (t) { return mathUtils.pointOnEllipse(center, rx, ry, t); }, options.subdivideThreshold)
         .map(function (p) { return svgPointToCoordinate(p, svgMeta, options); });
+    points[points.length - 1] = points[0];
     var id = options.idMapper ? options.idMapper(input) : null;
     var properties = options.propertyMapper ? options.propertyMapper(input) : null;
     var geometry = {

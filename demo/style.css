@@ -15,8 +15,11 @@
   height: 320px;
   overflow: hidden;
   text-align: center;
-  background-color: white;
-  border-radius: 3px;
+  background-image: url("checker.png");
+  background-repeat: repeat;
+  background-position: center center;
+  border: solid 2px #152331;
+  border-radius: 5px;
 }
 
 #svgPreviewImage {

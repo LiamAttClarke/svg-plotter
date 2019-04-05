@@ -4,7 +4,6 @@ import { expect } from "chai";
 import * as chaiRoughly from "chai-roughly";
 import * as fs from "fs";
 import * as path from "path";
-import { mercator } from "projections";
 import * as svgson from "svgson";
 import * as GeoJSONValidation from "geojson-validation";
 import * as svgeo from "../src/svgeo";
