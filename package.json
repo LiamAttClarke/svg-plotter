@@ -4,8 +4,8 @@
   "description": "Convert SVG files to GeoJSON",
   "main": "dist/svgeo.js",
   "scripts": {
-    "compile": "tsc",
-    "watch": "tsc -w",
+    "build": "tsc && npm run build-demo",
+    "build-demo": "./node_modules/.bin/browserify ./demo/main.js -o ./demo/main-bundle.js",
     "test": "ts-mocha -p tsconfig.json test/**/*.spec.ts"
   },
   "repository": {
@@ -19,7 +19,10 @@
   },
   "homepage": "https://github.com/LiamAttClarke/svgeo#readme",
   "dependencies": {
+    "@turf/bbox": "^6.0.1",
     "commander": "^2.19.0",
+    "file-saver": "^2.0.1",
+    "mapbox-gl": "^0.53.1",
     "projections": "^1.0.0",
     "svg-path-parser": "^1.1.0",
     "svgson": "^3.1.0",
@@ -32,6 +35,7 @@
     "@types/mocha": "^5.2.6",
     "@types/node": "^11.11.5",
     "@types/svg-path-parser": "^1.1.0",
+    "browserify": "^16.2.3",
     "chai": "^4.2.0",
     "chai-roughly": "^1.0.0",
     "geojson-validation": "^0.2.1",

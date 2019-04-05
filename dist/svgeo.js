@@ -372,13 +372,14 @@ function svgPointToCoordinate(point, svgMeta, options, svgTransform) {
     var aspect = svgMeta.width / svgMeta.height;
     var normalizedPoint = new Vector2_1.default((point.x - svgMeta.x) / svgMeta.width * aspect, (point.y - svgMeta.y) / svgMeta.height);
     var scale = options.width / mathUtils.EARTH_CIRCUMFERENCE;
-    normalizedPoint = normalizedPoint.subtractScalar(.5).multiplyByScalar(scale).addScalar(.5);
+    var centerPoint = projections_1.mercator({ lon: options.center.longitude, lat: options.center.latitude });
+    normalizedPoint = normalizedPoint
+        .subtractScalar(.5)
+        .multiplyByScalar(scale)
+        .add(centerPoint);
     normalizedPoint = new Vector2_1.default(mathUtils.clamp(normalizedPoint.x, 0, 1), mathUtils.clamp(normalizedPoint.y, 0, 1));
     var projectedCoord = projections_1.mercator(normalizedPoint);
-    return [
-        options.center.longitude + projectedCoord.lon,
-        options.center.latitude + projectedCoord.lat
-    ];
+    return [projectedCoord.lon, projectedCoord.lat];
 }
 exports.svgPointToCoordinate = svgPointToCoordinate;
 function warn(warning) {

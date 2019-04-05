@@ -10,7 +10,7 @@ commander
   .usage("<input> [outputPath] [options]")
   .option("-c, --center [center]", "Geographic coordinate to center the SVG geometry around. (default: 0,0)")
   .option("-w, --width [width]", "Width in metres (default: 1000e3 ie. 1000km)")
-  .option("-t, --subdivide-threshold [subdivideThreshold]", "Angle in degrees for when to subdivide a continous curve into discreet points. Decrease this number for smoother curves. (Default: 5)")
+  .option("-t, --subdivide-threshold [subdivideThreshold]", "Angle in degrees at which to subdivide curves. Decrease this number for smoother curves. (Default: 5)")
   .option("-p, --pretty", "Pretty print output")
   .option("-v, --verbose", "Print all logs to console")
   .parse(process.argv);

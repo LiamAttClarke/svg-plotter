@@ -55,7 +55,7 @@ describe("svgeo", () => {
 
     it("should return a valid GeoJSON Feature", () => {
       const feature = svgeo.createFeature({ type: "Point", coordinates: [0, 0] }, "test", { a: 123 });
-      expect(GeoJSONValidation.isFeature(feature)).to.be.true;
+      expect(GeoJSONValidation.isFeature(feature, geoJSONValdidationCallback)).to.be.true;
       expect(feature).to.deep.equal({
         id:"test",
         type: "Feature",
@@ -89,11 +89,9 @@ describe("svgeo", () => {
 
     it("should return the point projected with a mercator projection", () => {
       const coord1 = svgeo.svgPointToCoordinate(new Vector2(256, 256), svgMeta, defaultConvertOptions);
-      const expectedCoord1 = mercator({ x: 0.5, y: 0.5 });
-      expect(coord1).to.deep.equal([expectedCoord1.lon, expectedCoord1.lat]);
-      const coord2 = svgeo.svgPointToCoordinate(new Vector2(384, 128), svgMeta, defaultConvertOptions);
-      const expectedCoord2 = mercator({ x: 0.75, y: 0.25 });
-      expect(coord2).to.deep.equal([expectedCoord2.lon, expectedCoord2.lat]);
+      expect(coord1).to.deep.equal([0, 0]);
+      const coord2 = svgeo.svgPointToCoordinate(new Vector2(512, 512), svgMeta, defaultConvertOptions);
+      expect(coord2).to.deep.equal([180, -85.05112877980663]);
     });
 
     it("should clamp latitudes that exceed (+/-)85 degrees", () => {
@@ -116,11 +114,9 @@ describe("svgeo", () => {
         width: mathUtils.EARTH_CIRCUMFERENCE / 2
       };
       const coord1 = svgeo.svgPointToCoordinate(new Vector2(256, 256), svgMeta, convertOptions);
-      const expectedCoord1 = mercator({ x: 0.5, y: 0.5 });
-      expect(coord1).to.deep.equal([expectedCoord1.lon, expectedCoord1.lat]);
+      expect(coord1).to.deep.equal([0, 0]);
       const coord2 = svgeo.svgPointToCoordinate(new Vector2(512, 256), svgMeta, convertOptions);
-      const expectedCoord2 = mercator({ x: 0.75, y: 0.5 });
-      expect(coord2).to.deep.equal([expectedCoord2.lon, expectedCoord2.lat]);
+      expect(coord2).to.deep.equal([90, 0]);
     });
 
     it("should position the point relative to options.center", () => {
@@ -130,13 +126,10 @@ describe("svgeo", () => {
         subdivideThreshold: 10
       };
       const coord1 = svgeo.svgPointToCoordinate(new Vector2(256, 256), svgMeta, convertOptions);
-      const expectedCoord1 = mercator({ x: 0.5, y: 0.5 });
-      expect(coord1).to.deep.equal([expectedCoord1.lon + 15, expectedCoord1.lat + 15]);
-      const coord2 = svgeo.svgPointToCoordinate(new Vector2(384, 128), svgMeta, convertOptions);
-      const expectedCoord2 = mercator({ x: 0.75, y: 0.25 });
-      expect(coord2).to.deep.equal([expectedCoord2.lon + 15, expectedCoord2.lat + 15]);
+      expect(coord1).to.roughly.deep.equal([15, 15]);
     });
 
+    // TODO: Fill out this test case
     it("should return a point transformed by an SVG transform", () => {})
 
   });
@@ -151,9 +144,9 @@ describe("svgeo", () => {
       const svgMeta = svgeo.GetSVGMeta(parsedSVG);
       const features = svgeo.lineTransformer(parsedSVG.children[0], svgMeta, defaultConvertOptions);
       expect(features.length).to.equal(1);
-      expect(GeoJSONValidation.isFeature(features[0])).to.be.true;
-      expect(GeoJSONValidation.isLineString(features[0].geometry)).to.be.true;
-      expect((features[0].geometry as GeoJsonObject).coordinates).to.deep.equal([[-90, 66.27715161480374], [90, -66.74715120228447]]);
+      expect(GeoJSONValidation.isFeature(features[0], geoJSONValdidationCallback)).to.be.true;
+      expect(GeoJSONValidation.isLineString(features[0].geometry, geoJSONValdidationCallback)).to.be.true;
+      expect((features[0].geometry as GeoJsonObject).coordinates).to.deep.equal([[-90, 66.51326044311186], [90, -66.51326044311186]]);
     });
 
   });
@@ -167,14 +160,14 @@ describe("svgeo", () => {
       const parsedSVG = await svgson.parse(svgRect, { camelcase: true });
       const svgMeta = svgeo.GetSVGMeta(parsedSVG);
       const rect = svgeo.rectTransformer(parsedSVG.children[0], svgMeta, defaultConvertOptions)[0];
-      expect(GeoJSONValidation.isFeature(rect)).to.be.true;
-      expect(GeoJSONValidation.isPolygon(rect.geometry)).to.be.true;
+      expect(GeoJSONValidation.isFeature(rect, geoJSONValdidationCallback)).to.be.true;
+      expect(GeoJSONValidation.isPolygon(rect.geometry, geoJSONValdidationCallback)).to.be.true;
       expect(rect.geometry.coordinates).to.deep.equal([[
-        [-90, 66.27715161480374],
-        [90, 66.27715161480374],
-        [90, -66.74715120228447],
-        [-90, -66.74715120228447],
-        [-90, 66.27715161480374]
+        [-90, 66.51326044311186],
+        [90, 66.51326044311186],
+        [90, -66.51326044311186],
+        [-90, -66.51326044311186],
+        [-90, 66.51326044311186]
       ]]);
     });
 
@@ -182,25 +175,25 @@ describe("svgeo", () => {
       const parsedSVG = await svgson.parse(svgRect, { camelcase: true });
       const svgMeta = svgeo.GetSVGMeta(parsedSVG);
       const rect = svgeo.rectTransformer(parsedSVG.children[1], svgMeta, defaultConvertOptions)[0];
-      expect(GeoJSONValidation.isFeature(rect)).to.be.true;
-      expect(GeoJSONValidation.isPolygon(rect.geometry)).to.be.true;
+      expect(GeoJSONValidation.isFeature(rect, geoJSONValdidationCallback)).to.be.true;
+      expect(GeoJSONValidation.isPolygon(rect.geometry, geoJSONValdidationCallback)).to.be.true;
       expect(rect.geometry.coordinates).to.deep.equal([[
-        [-90, 40.5332473574587],
-        [-83.40990257669732, 60.384755260031355],
-        [-76.11037722821453, 64.86079164263543],
-        [-67.5, 66.27715161480374],
-        [71.88953224536287, 65.92687480453861],
-        [76.11037722821452, 64.86079164263543],
-        [83.40990257669732, 60.38475526003137],
-        [90, 40.53324735745872],
-        [83.40990257669732, -60.9623401216464],
-        [76.11037722821452, -65.3571352883345],
-        [67.5, -66.74715120228447],
-        [-71.88953224536287, -66.40341607915138],
-        [-76.11037722821452, -65.3571352883345],
-        [-83.40990257669732, -60.9623401216464],
-        [-90, -41.423544535420085],
-        [-90, 40.5332473574587]
+        [-90, 40.979898069620134],
+        [-83.40990257669732, 60.67484327381422],
+        [-76.11037722821453, 65.1101218491444],
+        [-67.5, 66.51326044311186],
+        [71.88953224536287, 66.1662669326175],
+        [76.11037722821452, 65.1101218491444],
+        [83.40990257669732, 60.67484327381422],
+        [90, 40.97989806962015],
+        [83.40990257669732, -60.67484327381424],
+        [76.11037722821452, -65.1101218491444],
+        [67.5, -66.51326044311186],
+        [-71.88953224536287, -66.1662669326175],
+        [-76.11037722821452, -65.1101218491444],
+        [-83.40990257669732, -60.67484327381424],
+        [-90, -40.97989806962015],
+        [-90, 40.979898069620134]
       ]]);
     });
 
@@ -216,18 +209,18 @@ describe("svgeo", () => {
       const svgMeta = svgeo.GetSVGMeta(parsedSVG);
       const features = svgeo.polylineTransformer(parsedSVG.children[0], svgMeta, defaultConvertOptions);
       expect(features.length).to.equal(1);
-      expect(GeoJSONValidation.isFeature(features[0])).to.be.true;
-      expect(GeoJSONValidation.isLineString(features[0].geometry)).to.be.true;
+      expect(GeoJSONValidation.isFeature(features[0], geoJSONValdidationCallback)).to.be.true;
+      expect(GeoJSONValidation.isLineString(features[0].geometry, geoJSONValdidationCallback)).to.be.true;
       expect(features[0].geometry.coordinates).to.deep.equal([
-        [-72, -18.27182881120864],
-        [-63, -34.329566962935075],
-        [-53.999999999999986, -26.581366777928018],
-        [-45, -47.81958166243998],
-        [-35.99999999999999, -41.423544535420085],
-        [-26.999999999999986, -58.53541562856473],
-        [-18.000000000000014, -53.51464959455888],
-        [-9.000000000000007, -66.74715120228447],
-        [0, -62.9275917419856]
+        [-72, -17.711014416582245],
+        [-63, -33.841220320476765],
+        [-53.999999999999986, -26.05283495188394],
+        [-45, -47.422140992876095],
+        [-35.99999999999999, -40.97989806962015],
+        [-26.999999999999986, -58.22628219768537],
+        [-18.000000000000014, -53.16258159476075],
+        [-9.000000000000007, -66.51326044311186],
+        [0, -62.658000452319406]
       ]);
     });
 
@@ -243,20 +236,20 @@ describe("svgeo", () => {
       const svgMeta = svgeo.GetSVGMeta(parsedSVG);
       const features = svgeo.polygonTransformer(parsedSVG.children[0], svgMeta, defaultConvertOptions);
       expect(features.length).to.equal(1);
-      expect(GeoJSONValidation.isFeature(features[0])).to.be.true;
-      expect(GeoJSONValidation.isPolygon(features[0].geometry)).to.be.true;
+      expect(GeoJSONValidation.isFeature(features[0], geoJSONValdidationCallback)).to.be.true;
+      expect(GeoJSONValidation.isPolygon(features[0].geometry, geoJSONValdidationCallback)).to.be.true;
       expect(features[0].geometry.coordinates).to.deep.equal([[
-        [-90, -72.9069533245733],
-        [-80.99999999999999, -80.8324317832456],
-        [-53.999999999999986, -80.8324317832456],
-        [-72, -83.29731570170968],
+        [-90, -72.73278609432643],
+        [-80.99999999999999, -80.73800862798672],
+        [-53.999999999999986, -80.73800862798672],
+        [-72, -83.22814054417216],
         [-63, -85.10173601678947],
-        [-90, -84.2698837069131],
+        [-90, -84.21070904403568],
         [-116.99999999999999, -85.10173601678947],
-        [-108, -83.29731570170968],
-        [-126, -80.8324317832456],
-        [-99.00000000000001, -80.8324317832456],
-        [-90, -72.9069533245733]
+        [-108, -83.22814054417216],
+        [-126, -80.73800862798672],
+        [-99.00000000000001, -80.73800862798672],
+        [-90, -72.73278609432643]
       ]]);
     });
 
@@ -274,26 +267,26 @@ describe("svgeo", () => {
       const svgMeta = svgeo.GetSVGMeta(parsedSVG);
       const features = svgeo.ellipseTransformer(parsedSVG.children[0], svgMeta, defaultConvertOptions);
       expect(features.length).to.equal(1);
-      expect(GeoJSONValidation.isFeature(features[0])).to.be.true;
-      expect(GeoJSONValidation.isPolygon(features[0].geometry)).to.be.true;
+      expect(GeoJSONValidation.isFeature(features[0], geoJSONValdidationCallback)).to.be.true;
+      expect(GeoJSONValidation.isPolygon(features[0].geometry, geoJSONValdidationCallback)).to.be.true;
       expect(features[0].geometry.coordinates).to.deep.equal([[
-        [-148.359375, 77.49063100012613],
-        [-149.42981907406002, 76.26998288998547],
-        [-152.47818588956417, 75.1442488285283],
-        [-157.04038923236592, 74.34226982668066],
-        [-162.421875, 74.05075451479573],
-        [-167.80336076763408, 74.34226982668066],
-        [-172.36556411043583, 75.1442488285283],
-        [-175.41393092593998, 76.26998288998547],
-        [-176.48437500000003, 77.49063100012613],
-        [-175.41393092593998, 78.60434071192854],
-        [-172.36556411043583, 79.47143860215122],
-        [-167.80336076763408, 80.01412765638977],
-        [-162.421875, 80.19805080143433],
-        [-157.04038923236592, 80.01412765638977],
-        [-152.47818588956417, 79.47143860215122],
-        [-149.42981907406005, 78.60434071192854],
-        [-148.359375, 77.49063100012613]
+        [90, 0],
+        [83.14915792601583, -32.537020833713726],
+        [63.63961030678928, -53.54434684391228],
+        [34.44150891285806, -63.62879981868179],
+        [0, -66.51326044311186],
+        [-34.44150891285806, -63.62879981868179],
+        [-63.63961030678928, -53.54434684391228],
+        [-83.1491579260158, -32.537020833713726],
+        [-90, 0],
+        [-83.14915792601583, 32.537020833713726],
+        [-63.63961030678929, 53.5443468439123],
+        [-34.441508912858126, 63.62879981868177],
+        [-1.9984014443252818e-14, 66.51326044311186],
+        [34.44150891285811, 63.62879981868177],
+        [63.63961030678928, 53.54434684391231],
+        [83.14915792601579, 32.53702083371378],
+        [90, 0]
       ]]);
     });
 
@@ -302,22 +295,24 @@ describe("svgeo", () => {
       const svgMeta = svgeo.GetSVGMeta(parsedSVG);
       const features = svgeo.ellipseTransformer(parsedSVG.children[0], svgMeta, defaultConvertOptions);
       expect(features.length).to.equal(1);
-      expect(GeoJSONValidation.isFeature(features[0])).to.be.true;
-      expect(GeoJSONValidation.isPolygon(features[0].geometry)).to.be.true;
+      expect(GeoJSONValidation.isFeature(features[0], geoJSONValdidationCallback)).to.be.true;
+      expect(GeoJSONValidation.isPolygon(features[0].geometry, geoJSONValdidationCallback)).to.be.true;
       expect(features[0].geometry.coordinates).to.deep.equal([[
-        [-113.20312499999999, 77.49063100012613],
-        [-113.27083978117223, 77.41577320923906],
-        [-113.47333199432956, 77.34120200300026],
-        [-114.27356907406003, 77.19586011023722],
-        [-117.32193588956417, 76.94062403087021],
-        [-127.265625, 76.70590373615683],
-        [-141.328125, 77.49063100012613],
-        [-141.2604102188278, 77.56505055287148],
-        [-141.05791800567044, 77.6383238747957],
-        [-140.25768092594, 77.77872154588538],
-        [-137.20931411043583, 78.01782803039414],
-        [-127.265625, 78.22973324675914],
-        [-113.20312499999999, 77.49063100012613]
+        [90, 0],
+        [88.27067523629073, -8.74491305102165],
+        [83.14915792601583, -16.967185870864693],
+        [63.63961030678928, -30.29995252677561],
+        [0, -40.97989806962015],
+        [-63.63961030678928, -30.29995252677561],
+        [-83.1491579260158, -16.967185870864693],
+        [-90, 0],
+        [-88.27067523629073, 8.74491305102165],
+        [-83.14915792601583, 16.967185870864668],
+        [-63.63961030678929, 30.29995252677559],
+        [-1.9984014443252818e-14, 40.979898069620134],
+        [63.63961030678928, 30.29995252677561],
+        [83.14915792601579, 16.967185870864693],
+        [90, 0]
       ]]);
     });
 
@@ -339,11 +334,7 @@ describe("svgeo", () => {
 
     it("should convert an SVG string to valid GeoJSON", async () => {
       const geoJSON = await svgeo.convertSVG(svg_shapes);
-      expect(GeoJSONValidation.valid(geoJSON, (valid, errors) => {
-        if (errors.length) {
-          console.error(errors);
-        }
-      })).to.be.true;
+      expect(GeoJSONValidation.valid(geoJSON, geoJSONValdidationCallback)).to.be.true;
     });
 
     it("should set feature id based on options.idMapper", async () => {
@@ -379,4 +370,10 @@ describe("svgeo", () => {
   });
 
 });
+
+function geoJSONValdidationCallback(isValid, error) {
+  if (!isValid) {
+    console.error(error);
+  }
+}
 

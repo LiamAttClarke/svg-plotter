@@ -38,7 +38,7 @@ Options:
   -V, --version                                   output the version number
   -c, --center [center]                           Geographic coordinate to center the SVG geometry around. (default: 0,0)
   -w, --width [width]                             Width in metres (default: 1000e3 ie. 1000km)
-  -t, --subdivide-threshold [subdivideThreshold]  Angle in degrees for when to subdivide a continous curve into discreet points. Decrease this number for smoother curves. (Default: 5)
+  -t, --subdivide-threshold [subdivideThreshold]  Angle in degrees at which to subdivide curves. Decrease this number for smoother curves. (Default: 5)
   -p, --pretty                                    Pretty print output
   -v, --verbose                                   Print all logs to console
   -h, --help                                      output usage information
@@ -76,7 +76,7 @@ Returns: `Promise<GeoJSON>`
 
 - `options.subdivideThreshold`
 
-  Angle in degrees for when to subdivide a continous curve into discreet points. Decrease this number for smoother curves.
+  Angle in degrees at which to subdivide curves. Decrease this number for smoother curves.
 
   Type: `Number`,
 

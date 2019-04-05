@@ -4,6 +4,7 @@ import * as svgTransformParser from "ya-svg-transform";
 import { mercator } from "projections";
 import * as mathUtils from "./math-utils";
 import Vector2 from "./Vector2";
+import { normalize } from "path";
 
 export interface ConvertSVGOptions {
   center?:mathUtils.Coordinate,
@@ -211,6 +212,8 @@ export function ellipseTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData,
   }
   const points = mathUtils.drawCurve((t:number) => mathUtils.pointOnEllipse(center, rx, ry, t), options.subdivideThreshold)
     .map(p => svgPointToCoordinate(p, svgMeta, options));
+  // Ensure first and last points are identical
+  points[points.length - 1] = points[0];
   const id = options.idMapper ? options.idMapper(input) : null;
   const properties = options.propertyMapper ? options.propertyMapper(input) : null;
   const geometry:GeoJSON.Polygon = {
@@ -403,21 +406,20 @@ export function svgPointToCoordinate(point:Vector2, svgMeta:SVGMetaData, options
     (point.x - svgMeta.x) / svgMeta.width * aspect,
     (point.y - svgMeta.y) / svgMeta.height
   );
-  // Scale point
+  // Scale and offset point
   const scale = options.width / mathUtils.EARTH_CIRCUMFERENCE;
-  normalizedPoint = normalizedPoint.subtractScalar(.5).multiplyByScalar(scale).addScalar(.5);
-  // Clamp point to [0,1] range
+  const centerPoint = mercator({ lon: options.center.longitude, lat: options.center.latitude });
+  normalizedPoint = normalizedPoint
+    .subtractScalar(.5)
+    .multiplyByScalar(scale)
+    .add(centerPoint as Vector2);
+  // Clamp values to [0,1] range
   normalizedPoint = new Vector2(
     mathUtils.clamp(normalizedPoint.x, 0, 1),
-    mathUtils.clamp(normalizedPoint.y, 0, 1)
-  );
+    mathUtils.clamp(normalizedPoint.y, 0, 1));
   // Apply mercator projection
   const projectedCoord = mercator(normalizedPoint);
-  // Offset position from options.center
-  return [
-    options.center.longitude + projectedCoord.lon,
-    options.center.latitude + projectedCoord.lat
-  ];
+  return [projectedCoord.lon, projectedCoord.lat];
 }
 
 function warn(warning:string):void {
