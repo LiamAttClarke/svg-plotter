@@ -69,7 +69,6 @@ svgFileInput.addEventListener('change', function(event) {
 convertForm.addEventListener('submit', function(event) {
   event.preventDefault();
   const formData = new FormData(convertForm);
-  console.log(parseFloat(formData.get('bearing')))
   svgeo.convertSVG(svgInput, {
     center: {
       latitude: parseFloat(formData.get('centerLatitude')),

@@ -105,6 +105,16 @@ exports.GetSVGMeta = GetSVGMeta;
 function groupTransformer(input, svgMeta, options) {
     var features = [];
     input.children.forEach(function (child) {
+        if (input.attributes.transform) {
+            if (child.attributes.transform) {
+                var groupTransform = svgTransformParser.transform(input.attributes.transform).asMatrix();
+                var childTransform = svgTransformParser.transform(child.attributes.transform).asMatrix();
+                child.attributes.transform = groupTransform.dot(childTransform).render();
+            }
+            else {
+                child.attributes.transform = input.attributes.transform;
+            }
+        }
         var transform = transformers[child.name];
         if (transform) {
             features.push.apply(features, transform(child, svgMeta, options));
@@ -124,8 +134,8 @@ function lineTransformer(input, svgMeta, options) {
     var geometry = {
         type: "LineString",
         coordinates: [
-            svgPointToCoordinate(new Vector2_1.default(input.attributes.x1, input.attributes.y1), svgMeta, options),
-            svgPointToCoordinate(new Vector2_1.default(input.attributes.x2, input.attributes.y2), svgMeta, options)
+            svgPointToCoordinate(new Vector2_1.default(input.attributes.x1, input.attributes.y1), svgMeta, options, input.attributes.transform),
+            svgPointToCoordinate(new Vector2_1.default(input.attributes.x2, input.attributes.y2), svgMeta, options, input.attributes.transform)
         ]
     };
     return [createFeature(geometry, id, properties)];
@@ -159,14 +169,15 @@ function rectTransformer(input, svgMeta, options) {
     var properties = options.propertyMapper ? options.propertyMapper(input) : null;
     var geometry = {
         type: "Polygon",
-        coordinates: [ring.map(function (p) { return svgPointToCoordinate(p, svgMeta, options); })]
+        coordinates: [ring.map(function (p) { return svgPointToCoordinate(p, svgMeta, options, input.attributes.transform); })]
     };
     return [createFeature(geometry, id, properties)];
 }
 exports.rectTransformer = rectTransformer;
 function polylineTransformer(input, svgMeta, options) {
     var features = [];
-    var points = parseSVGPointsString(input.attributes.points).map(function (p) { return svgPointToCoordinate(p, svgMeta, options); });
+    var points = parseSVGPointsString(input.attributes.points)
+        .map(function (p) { return svgPointToCoordinate(p, svgMeta, options, input.attributes.transform); });
     var geometry = null;
     if (points.length > 1) {
         geometry = {
@@ -189,7 +200,8 @@ function polylineTransformer(input, svgMeta, options) {
 }
 exports.polylineTransformer = polylineTransformer;
 function polygonTransformer(input, svgMeta, options) {
-    var points = parseSVGPointsString(input.attributes.points).map(function (p) { return svgPointToCoordinate(p, svgMeta, options); });
+    var points = parseSVGPointsString(input.attributes.points)
+        .map(function (p) { return svgPointToCoordinate(p, svgMeta, options, input.attributes.transform); });
     points.push(points[0]);
     var id = options.idMapper ? options.idMapper(input) : null;
     var properties = options.propertyMapper ? options.propertyMapper(input) : null;
@@ -212,7 +224,7 @@ function ellipseTransformer(input, svgMeta, options) {
         ry = parseFloat(input.attributes.ry);
     }
     var points = mathUtils.drawCurve(function (t) { return mathUtils.pointOnEllipse(center, rx, ry, t); }, options.subdivideThreshold)
-        .map(function (p) { return svgPointToCoordinate(p, svgMeta, options); });
+        .map(function (p) { return svgPointToCoordinate(p, svgMeta, options, input.attributes.transform); });
     points[points.length - 1] = points[0];
     var id = options.idMapper ? options.idMapper(input) : null;
     var properties = options.propertyMapper ? options.propertyMapper(input) : null;
@@ -240,11 +252,11 @@ function pathTransformer(input, svgMeta, options) {
             else if (currentLineString.length > 1) {
                 lineStrings.push(currentLineString);
             }
-            currentLineString = [svgPointToCoordinate(new Vector2_1.default(command.x, command.y), svgMeta, options)];
+            currentLineString = [svgPointToCoordinate(new Vector2_1.default(command.x, command.y), svgMeta, options, input.attributes.transform)];
         }
         else if (["L", "V", "H"].indexOf(pathCommand.code) !== -1) {
             var command = pathCommand;
-            currentLineString.push(svgPointToCoordinate(new Vector2_1.default(command.x, command.y), svgMeta, options));
+            currentLineString.push(svgPointToCoordinate(new Vector2_1.default(command.x, command.y), svgMeta, options, input.attributes.transform));
         }
         else if (["C", "S"].indexOf(pathCommand.code) !== -1) {
             var command = pathCommand;
@@ -259,7 +271,7 @@ function pathTransformer(input, svgMeta, options) {
             var p2_1 = new Vector2_1.default(command.x2, command.y2);
             var p3_1 = new Vector2_1.default(command.x, command.y);
             var curvePoints = mathUtils.drawCurve(function (t) { return mathUtils.pointOnCubicBezierCurve(p0_1, p1_1, p2_1, p3_1, t); }, options.subdivideThreshold)
-                .map(function (p) { return svgPointToCoordinate(p, svgMeta, options); });
+                .map(function (p) { return svgPointToCoordinate(p, svgMeta, options, input.attributes.transform); });
             currentLineString = currentLineString.concat(curvePoints);
             previousCurveHandle = p2_1;
         }
@@ -275,7 +287,7 @@ function pathTransformer(input, svgMeta, options) {
             }
             var p2_2 = new Vector2_1.default(command.x, command.y);
             var curvePoints = mathUtils.drawCurve(function (t) { return mathUtils.pointOnQuadraticBezierCurve(p0_2, p1_2, p2_2, t); }, options.subdivideThreshold)
-                .map(function (p) { return svgPointToCoordinate(p, svgMeta, options); });
+                .map(function (p) { return svgPointToCoordinate(p, svgMeta, options, input.attributes.transform); });
             currentLineString = currentLineString.concat(curvePoints);
             previousCurveHandle = p1_2;
         }
@@ -289,7 +301,7 @@ function pathTransformer(input, svgMeta, options) {
             var largeArc_1 = command.largeArc;
             var sweep_1 = !command.sweep;
             var curvePoints = mathUtils.drawCurve(function (t) { return mathUtils.pointOnEllipticalArc(p0_3, p1_3, rx_1, ry_1, xAxisRotation_1, largeArc_1, sweep_1, t); }, options.subdivideThreshold)
-                .map(function (p) { return svgPointToCoordinate(p, svgMeta, options); });
+                .map(function (p) { return svgPointToCoordinate(p, svgMeta, options, input.attributes.transform); });
             currentLineString = currentLineString.concat(curvePoints);
         }
         else if (pathCommand.code === "Z") {

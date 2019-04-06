@@ -127,9 +127,8 @@ Returns: `Promise<GeoJSON>`
   ```
 
   ## TODO
-  - Add warning messages to convertSVG output and demo page
-  - Add support for nested transforms
   - Add support for percentage units
+  - Add warning messages to convertSVG output and demo page
   - Add missing unit tests
   - Contribute missing @types typings
   - Publish to NPM registry

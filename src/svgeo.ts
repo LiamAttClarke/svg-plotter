@@ -91,6 +91,17 @@ export function groupTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData, o
   // Reference: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/g
   let features:Array<GeoJSON.Feature> = []
   input.children.forEach(child => {
+    // Apply transform attribute to children recursively
+    if (input.attributes.transform) {
+      if (child.attributes.transform) {
+        const groupTransform = svgTransformParser.transform(input.attributes.transform).asMatrix();
+        const childTransform = svgTransformParser.transform(child.attributes.transform).asMatrix();
+        child.attributes.transform = groupTransform.dot(childTransform).render();
+      } else {
+        child.attributes.transform = input.attributes.transform;
+      }
+    }
+    // Convert child geometries
     const transform = transformers[child.name];
     if (transform) {
       features.push(...transform(child, svgMeta, options));
@@ -110,8 +121,8 @@ export function lineTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData, op
   const geometry:GeoJSON.LineString = {
     type: "LineString",
     coordinates: [
-      svgPointToCoordinate(new Vector2(input.attributes.x1, input.attributes.y1), svgMeta, options),
-      svgPointToCoordinate(new Vector2(input.attributes.x2, input.attributes.y2), svgMeta, options)
+      svgPointToCoordinate(new Vector2(input.attributes.x1, input.attributes.y1), svgMeta, options, input.attributes.transform),
+      svgPointToCoordinate(new Vector2(input.attributes.x2, input.attributes.y2), svgMeta, options, input.attributes.transform)
     ]
   };
   return [createFeature(geometry, id, properties)];
@@ -156,7 +167,7 @@ export function rectTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData, op
   const properties = options.propertyMapper ? options.propertyMapper(input) : null;
   const geometry:GeoJSON.Polygon = {
     type: "Polygon",
-    coordinates: [ring.map(p => svgPointToCoordinate(p, svgMeta, options))]
+    coordinates: [ring.map(p => svgPointToCoordinate(p, svgMeta, options, input.attributes.transform))]
   };
   return [createFeature(geometry, id, properties)];
 }
@@ -164,7 +175,8 @@ export function rectTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData, op
 export function polylineTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData, options:ConvertSVGOptions):GeoJSON.Feature[] {
   // Reference: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/polyline
   const features: GeoJSON.Feature[] = [];
-  let points = parseSVGPointsString(input.attributes.points).map(p => svgPointToCoordinate(p, svgMeta, options));
+  let points = parseSVGPointsString(input.attributes.points)
+    .map(p => svgPointToCoordinate(p, svgMeta, options, input.attributes.transform));
   let geometry: GeoJSON.Geometry = null;
   if (points.length > 1) {
     geometry = {
@@ -187,7 +199,8 @@ export function polylineTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData
 
 export function polygonTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData, options:ConvertSVGOptions):GeoJSON.Feature[] {
   // Reference: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/polygon
-  const points = parseSVGPointsString(input.attributes.points).map(p => svgPointToCoordinate(p, svgMeta, options));
+  const points = parseSVGPointsString(input.attributes.points)
+    .map(p => svgPointToCoordinate(p, svgMeta, options, input.attributes.transform));
   points.push(points[0]);
   const id = options.idMapper ? options.idMapper(input) : null;
   const properties = options.propertyMapper ? options.propertyMapper(input) : null;
@@ -211,7 +224,7 @@ export function ellipseTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData,
       ry = parseFloat(input.attributes.ry)
   }
   const points = mathUtils.drawCurve((t:number) => mathUtils.pointOnEllipse(center, rx, ry, t), options.subdivideThreshold)
-    .map(p => svgPointToCoordinate(p, svgMeta, options));
+    .map(p => svgPointToCoordinate(p, svgMeta, options, input.attributes.transform));
   // Ensure first and last points are identical
   points[points.length - 1] = points[0];
   const id = options.idMapper ? options.idMapper(input) : null;
@@ -241,10 +254,10 @@ export function pathTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData, op
       } else if (currentLineString.length > 1) {
         lineStrings.push(currentLineString);
       }
-      currentLineString = [svgPointToCoordinate(new Vector2(command.x, command.y), svgMeta, options)];
+      currentLineString = [svgPointToCoordinate(new Vector2(command.x, command.y), svgMeta, options, input.attributes.transform)];
     } else if (["L", "V", "H"].indexOf(pathCommand.code) !== -1) {
       const command = <LineCommand>pathCommand;
-      currentLineString.push(svgPointToCoordinate(new Vector2(command.x, command.y), svgMeta, options));
+      currentLineString.push(svgPointToCoordinate(new Vector2(command.x, command.y), svgMeta, options, input.attributes.transform));
     } else if (["C", "S"].indexOf(pathCommand.code) !== -1) {
       const command = <svgPathParser.CurveToCommand>pathCommand;
       const p0 = new Vector2((command as any).x0, (command as any).y0); // Type does not include x0 and y0
@@ -257,7 +270,7 @@ export function pathTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData, op
       const p2 = new Vector2(command.x2, command.y2);
       const p3 = new Vector2(command.x, command.y);
       const curvePoints = mathUtils.drawCurve((t:number) => mathUtils.pointOnCubicBezierCurve(p0, p1, p2, p3, t), options.subdivideThreshold)
-        .map(p => svgPointToCoordinate(p, svgMeta, options));
+        .map(p => svgPointToCoordinate(p, svgMeta, options, input.attributes.transform));
       currentLineString = currentLineString.concat(curvePoints);
       previousCurveHandle = p2;
     } else if (["Q", "T"].indexOf(pathCommand.code) !== -1) {
@@ -271,7 +284,7 @@ export function pathTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData, op
       }
       const p2 = new Vector2(command.x, command.y);
       const curvePoints = mathUtils.drawCurve((t:number) => mathUtils.pointOnQuadraticBezierCurve(p0, p1, p2, t), options.subdivideThreshold)
-        .map(p => svgPointToCoordinate(p, svgMeta, options));
+        .map(p => svgPointToCoordinate(p, svgMeta, options, input.attributes.transform));
       currentLineString = currentLineString.concat(curvePoints);
       previousCurveHandle = p1;
     } else if (pathCommand.code === "A") {
@@ -284,7 +297,7 @@ export function pathTransformer(input: svgson.SVGObject, svgMeta:SVGMetaData, op
       const largeArc = command.largeArc;
       const sweep = !command.sweep;
       const curvePoints = mathUtils.drawCurve((t:number) => mathUtils.pointOnEllipticalArc(p0, p1, rx, ry, xAxisRotation, largeArc, sweep, t), options.subdivideThreshold)
-        .map(p => svgPointToCoordinate(p, svgMeta, options));
+        .map(p => svgPointToCoordinate(p, svgMeta, options, input.attributes.transform));
       currentLineString = currentLineString.concat(curvePoints);
     } else if (pathCommand.code === "Z") {
       currentLineString.push(currentLineString[0]);
@@ -395,7 +408,6 @@ export function parseSVGPointsString(pointString:string):Vector2[] {
 
 export function svgPointToCoordinate(point:Vector2, svgMeta:SVGMetaData, options:ConvertSVGOptions, svgTransform?:string):GeoJSON.Position {
   // Apply SVG Transform
-  // TODO: Account for nested transforms D:
   if (svgTransform) {
     const transformedPoint = svgTransformParser.transform(svgTransform).apply(point);
     point = new Vector2(transformedPoint.x, transformedPoint.y);
