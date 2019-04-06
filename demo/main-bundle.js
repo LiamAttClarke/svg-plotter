@@ -1,20 +1,20 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
-var mapbox = require('mapbox-gl');
-var bbox = require('@turf/bbox').default;
-var FileSaver = require('file-saver');
-var svgeo = require('../dist/svgeo');
+const mapbox = require('mapbox-gl');
+const bbox = require('@turf/bbox').default;
+const FileSaver = require('file-saver');
+const svgeo = require('../dist/svgeo');
 
-var svgPreviewImage = document.getElementById('svgPreviewImage');
-var convertForm = document.getElementById('convertForm');
-var svgFileInput = document.getElementById('svgFileInput');
-var downloadButton = document.getElementById('downloadButton');
+const svgPreviewImage = document.getElementById('svgPreviewImage');
+const convertForm = document.getElementById('convertForm');
+const svgFileInput = document.getElementById('svgFileInput');
+const downloadButton = document.getElementById('downloadButton');
 
-var svgInput = null;
-var geojsonOutput = null;
+let svgInput = null;
+let geojsonOutput = null;
 
 // Setup map preview
 mapbox.accessToken = 'pk.eyJ1IjoibGlhbWF0dGNsYXJrZSIsImEiOiJjaXEzN2VidjUwMGFybmptNHVtNHB3cGptIn0.ZSHWqW1AMlyE3A6FlqA0ww';
-var map = new mapbox.Map({
+const map = new mapbox.Map({
   container: 'previewMap',
   style: 'mapbox://styles/liamattclarke/cjtzbrujx4jya1fqwtdtj9ety',
   center: [-79.411079, 43.761539],
@@ -58,7 +58,7 @@ map.on('load', function() {
 
 svgFileInput.addEventListener('change', function(event) {
   if (event.target.files.length) {
-    var fileReader = new FileReader();
+    const fileReader = new FileReader();
     fileReader.onload = function(event) {
       svgInput = event.target.result;
       svgPreviewImage.src = 'data:image/svg+xml;base64,' + btoa(event.target.result);
@@ -69,7 +69,7 @@ svgFileInput.addEventListener('change', function(event) {
 
 convertForm.addEventListener('submit', function(event) {
   event.preventDefault();
-  var formData = new FormData(convertForm);
+  const formData = new FormData(convertForm);
   svgeo.convertSVG(svgInput, {
     center: {
       latitude: parseFloat(formData.get('centerLatitude')),
@@ -89,8 +89,10 @@ convertForm.addEventListener('submit', function(event) {
 
 downloadButton.addEventListener('click', function() {
   if (geojsonOutput) {
-    var blob = new Blob([JSON.stringify(geojsonOutput, null, 2)], { type: 'application/json' });
-    FileSaver.saveAs(blob, 'test.geojson');
+    const formData = new FormData(convertForm);
+    const blob = new Blob([JSON.stringify(geojsonOutput, null, 2)], { type: 'application/json' });
+    const fileName = formData.get('svgFile').name.replace('.svg', '.geojson');
+    FileSaver.saveAs(blob, fileName);
   }
 });
 },{"../dist/svgeo":4,"@turf/bbox":5,"file-saver":8,"mapbox-gl":9}],2:[function(require,module,exports){
