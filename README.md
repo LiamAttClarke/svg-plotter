@@ -127,10 +127,9 @@ Returns: `Promise<GeoJSON>`
   ```
 
   ## TODO
-  - Add rotation option (compass heading)
-  - Add support for percentage units
+  - Add warning messages to convertSVG output and demo page
   - Add support for nested transforms
+  - Add support for percentage units
   - Add missing unit tests
-  - Create demo webpage
   - Contribute missing @types typings
   - Publish to NPM registry

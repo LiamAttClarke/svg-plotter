@@ -38,3 +38,8 @@
   border: solid 2px #152331;
   border-radius: 5px;
 }
+
+.input-option-description {
+  margin: 4px 0;
+  font-size: 14px;
+}

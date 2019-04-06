@@ -85,7 +85,8 @@ convertForm.addEventListener('submit', function(event) {
     map.getSource('svg').setData(geojson);
     map.fitBounds(bbox(geojson), { padding: 100 });
   }).catch(errors => {
-    console.warn(errors);
+    alert('Failed to convert SVG. See logs for more detail. Sorry :(');
+    console.error(errors);
   });
 });
 
