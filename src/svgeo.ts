@@ -4,11 +4,11 @@ import * as svgTransformParser from "ya-svg-transform";
 import { mercator } from "projections";
 import * as mathUtils from "./math-utils";
 import Vector2 from "./Vector2";
-import { normalize } from "path";
 
 export interface ConvertSVGOptions {
   center?:mathUtils.Coordinate,
   width?:number,
+  bearing?:number,
   subdivideThreshold?:number,
   idMapper?:FeatureIdMapper,
   propertyMapper?:FeaturePropertyMapper,
@@ -402,23 +402,33 @@ export function svgPointToCoordinate(point:Vector2, svgMeta:SVGMetaData, options
   }
   // Normalize point to [0,1] range
   const aspect = svgMeta.width / svgMeta.height;
-  let normalizedPoint = new Vector2(
+  let outputPoint = new Vector2(
     (point.x - svgMeta.x) / svgMeta.width * aspect,
     (point.y - svgMeta.y) / svgMeta.height
   );
-  // Scale and offset point
+  // Scale, rotate, and offset point
   const scale = options.width / mathUtils.EARTH_CIRCUMFERENCE;
   const centerPoint = mercator({ lon: options.center.longitude, lat: options.center.latitude });
-  normalizedPoint = normalizedPoint
+  // Scale point
+  outputPoint = outputPoint
     .subtractScalar(.5)
-    .multiplyByScalar(scale)
-    .add(centerPoint as Vector2);
+    .multiplyByScalar(scale);
+  // Rotate point
+  if (options.bearing) {
+    const rotation = mathUtils.toRadians(options.bearing);
+    outputPoint = new Vector2(
+      outputPoint.x * Math.cos(rotation) - outputPoint.y * Math.sin(rotation),
+      outputPoint.x * Math.sin(rotation) + outputPoint.y * Math.cos(rotation)
+    );
+  }
+  // Translate point
+  outputPoint = outputPoint.add(centerPoint as Vector2);
   // Clamp values to [0,1] range
-  normalizedPoint = new Vector2(
-    mathUtils.clamp(normalizedPoint.x, 0, 1),
-    mathUtils.clamp(normalizedPoint.y, 0, 1));
+  outputPoint = new Vector2(
+    mathUtils.clamp(outputPoint.x, 0, 1),
+    mathUtils.clamp(outputPoint.y, 0, 1));
   // Apply mercator projection
-  const projectedCoord = mercator(normalizedPoint);
+  const projectedCoord = mercator(outputPoint);
   return [projectedCoord.lon, projectedCoord.lat];
 }
 

@@ -38,6 +38,7 @@ Options:
   -V, --version                                   output the version number
   -c, --center [center]                           Geographic coordinate to center the SVG geometry around. (default: 0,0)
   -w, --width [width]                             Width in metres (default: 1000e3 ie. 1000km)
+  -b, --bearing [bearing]                         Angle in degrees to rotate geometry clockwise around it's center. (default: 0)
   -t, --subdivide-threshold [subdivideThreshold]  Angle in degrees at which to subdivide curves. Decrease this number for smoother curves. (Default: 5)
   -p, --pretty                                    Pretty print output
   -v, --verbose                                   Print all logs to console
@@ -73,6 +74,14 @@ Returns: `Promise<GeoJSON>`
   Type: `Number`
 
   Default: `1000e3`
+
+- `options.bearing`
+
+  Angle in degrees to rotate geometry clockwise around it's center.
+
+  Type: `Number`
+
+  Default: 0
 
 - `options.subdivideThreshold`
 

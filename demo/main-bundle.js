@@ -70,12 +70,14 @@ svgFileInput.addEventListener('change', function(event) {
 convertForm.addEventListener('submit', function(event) {
   event.preventDefault();
   const formData = new FormData(convertForm);
+  console.log(parseFloat(formData.get('bearing')))
   svgeo.convertSVG(svgInput, {
     center: {
       latitude: parseFloat(formData.get('centerLatitude')),
       longitude: parseFloat(formData.get('centerLongitude'))
     },
     width: parseFloat(formData.get('width')),
+    bearing: parseFloat(formData.get('bearing')),
     subdivideThreshold: parseFloat(formData.get('subdivideThreshold'))
   }).then(geojson => {
     geojsonOutput = geojson;
@@ -668,15 +670,19 @@ function svgPointToCoordinate(point, svgMeta, options, svgTransform) {
         point = new Vector2_1.default(transformedPoint.x, transformedPoint.y);
     }
     var aspect = svgMeta.width / svgMeta.height;
-    var normalizedPoint = new Vector2_1.default((point.x - svgMeta.x) / svgMeta.width * aspect, (point.y - svgMeta.y) / svgMeta.height);
+    var outputPoint = new Vector2_1.default((point.x - svgMeta.x) / svgMeta.width * aspect, (point.y - svgMeta.y) / svgMeta.height);
     var scale = options.width / mathUtils.EARTH_CIRCUMFERENCE;
     var centerPoint = projections_1.mercator({ lon: options.center.longitude, lat: options.center.latitude });
-    normalizedPoint = normalizedPoint
+    outputPoint = outputPoint
         .subtractScalar(.5)
-        .multiplyByScalar(scale)
-        .add(centerPoint);
-    normalizedPoint = new Vector2_1.default(mathUtils.clamp(normalizedPoint.x, 0, 1), mathUtils.clamp(normalizedPoint.y, 0, 1));
-    var projectedCoord = projections_1.mercator(normalizedPoint);
+        .multiplyByScalar(scale);
+    if (options.bearing) {
+        var rotation = mathUtils.toRadians(options.bearing);
+        outputPoint = new Vector2_1.default(outputPoint.x * Math.cos(rotation) - outputPoint.y * Math.sin(rotation), outputPoint.x * Math.sin(rotation) + outputPoint.y * Math.cos(rotation));
+    }
+    outputPoint = outputPoint.add(centerPoint);
+    outputPoint = new Vector2_1.default(mathUtils.clamp(outputPoint.x, 0, 1), mathUtils.clamp(outputPoint.y, 0, 1));
+    var projectedCoord = projections_1.mercator(outputPoint);
     return [projectedCoord.lon, projectedCoord.lat];
 }
 exports.svgPointToCoordinate = svgPointToCoordinate;
