@@ -127,6 +127,7 @@ Returns: `Promise<GeoJSON>`
   ```
 
   ## TODO
+  - Add support for composite paths (convert to multi-polygons)
   - Add support for percentage units
   - Add warning messages to convertSVG output and demo page
   - Add missing unit tests
