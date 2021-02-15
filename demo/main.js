@@ -1,7 +1,7 @@
 const mapbox = require('mapbox-gl');
 const bbox = require('@turf/bbox').default;
 const FileSaver = require('file-saver');
-const svgeo = require('../dist/svgeo');
+const { convertSVG } = require('../dist');
 
 const svgPreviewImage = document.getElementById('svgPreviewImage');
 const convertForm = document.getElementById('convertForm');
@@ -69,23 +69,24 @@ svgFileInput.addEventListener('change', function(event) {
 convertForm.addEventListener('submit', function(event) {
   event.preventDefault();
   const formData = new FormData(convertForm);
-  svgeo.convertSVG(svgInput, {
-    center: {
-      latitude: parseFloat(formData.get('centerLatitude')),
-      longitude: parseFloat(formData.get('centerLongitude'))
-    },
-    width: parseFloat(formData.get('width')),
-    bearing: parseFloat(formData.get('bearing')),
-    subdivideThreshold: parseFloat(formData.get('subdivideThreshold'))
-  }).then(geojson => {
-    geojsonOutput = geojson;
+  try {
+    geojsonOutput = convertSVG(svgInput, {
+      center: {
+        latitude: parseFloat(formData.get('centerLatitude')),
+        longitude: parseFloat(formData.get('centerLongitude'))
+      },
+      width: parseFloat(formData.get('width')),
+      bearing: parseFloat(formData.get('bearing')),
+      subdivideThreshold: parseFloat(formData.get('subdivideThreshold'))
+    });
+    console.log(geojsonOutput)
     downloadButton.removeAttribute('disabled');
-    map.getSource('svg').setData(geojson);
-    map.fitBounds(bbox(geojson), { padding: 100 });
-  }).catch(errors => {
-    alert('Failed to convert SVG. See logs for more detail. Sorry :(');
-    console.error(errors);
-  });
+    map.getSource('svg').setData(geojsonOutput);
+    map.fitBounds(bbox(geojsonOutput), { padding: 100 });
+  } catch(e) {
+    alert('Failed to convert SVG. See logs for more detail.');
+    console.error(e);
+  }
 });
 
 downloadButton.addEventListener('click', function() {

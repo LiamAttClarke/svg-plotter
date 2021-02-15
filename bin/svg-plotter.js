@@ -13,7 +13,6 @@ commander
   .option('-b, --bearing [bearing]', 'Angle in degrees to rotate geometry clockwise around it\'s center. (default: 0)')
   .option('-t, --subdivide-threshold [subdivideThreshold]', 'Angle in degrees at which to subdivide curves. Decrease this number for smoother curves. (Default: 5)')
   .option('-p, --pretty', 'Pretty print output')
-  .option('-v, --verbose', 'Print all logs to console')
   .parse(process.argv);
 
 // Validate arguments
@@ -65,7 +64,6 @@ convertSVG(svg, {
   width: parseFloat(commander.width) || null,
   bearing: parseFloat(commander.bearing) || 0,
   subdivideThreshold: parseFloat(commander.subdivideThreshold) || null,
-  verbose: commander.verbose
 }).then(geojson => {
   fs.writeFileSync(outputPath, JSON.stringify(geojson, null, commander.pretty ? 2 : 0));
   console.info('Converted SVG to GeoJSON.');
