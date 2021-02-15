@@ -1,3 +1,5 @@
+const isProduction = process.env.NODE_ENV === 'production';
+
 module.exports = {
   root: true,
   env: {
@@ -26,6 +28,7 @@ module.exports = {
     '@typescript-eslint',
   ],
   rules: {
+    'no-console': isProduction ? 'error' : 'warn',
     'import/extensions': 'off',
     '@typescript-eslint/type-annotation-spacing': 2,
   }
