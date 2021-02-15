@@ -3,7 +3,7 @@
 const commander = require('commander');
 const fs = require('fs');
 const path = require('path');
-const { convertSVG } = require('../dist/svgeo');
+const { convertSVG } = require('../dist');
 
 commander
   .version('0.0.0')
@@ -14,6 +14,8 @@ commander
   .option('-t, --subdivide-threshold [subdivideThreshold]', 'Angle in degrees at which to subdivide curves. Decrease this number for smoother curves. (Default: 5)')
   .option('-p, --pretty', 'Pretty print output')
   .parse(process.argv);
+
+const options = commander.opts();
 
 // Validate arguments
 
@@ -27,19 +29,19 @@ if (!fs.statSync(commander.args[0]).isFile() || path.extname(commander.args[0]) 
   process.exit(1);
 }
 
-if (commander.center && !commander.center.match(/(\-)?\d+(\.\d+)?\(\-)?\d+(\.\d+)?/)) {
+if (options.center && !options.center.match(/(\-)?\d+(\.\d+)?\(\-)?\d+(\.\d+)?/)) {
   console.error('\'center\' must be in the form: {latitude},{longitude}');
 }
 
-if (commander.width) {
-  const width = parseFloat(commander.width);
+if (options.width) {
+  const width = parseFloat(options.width);
   if (!width || width <= 0) {
     console.error('\'scale\' must be greater than zero.');
     process.exit(1);
   }
 }
 
-if (commander.subdivideThreshold && parseFloat(commander.subdivideThreshold) <= 0) {
+if (options.subdivideThreshold && parseFloat(options.subdivideThreshold) <= 0) {
   console.error('\'subdivideThreshold\' must be greater than zero.');
   process.exit(1);
 }
@@ -47,27 +49,36 @@ if (commander.subdivideThreshold && parseFloat(commander.subdivideThreshold) <= 
 // Process SVG
 
 const inputPath = commander.args[0];
+const inputDir = path.dirname(inputPath);
+const outputFileName = path.basename(inputPath, '.svg') + '.geojson';
 let outputPath;
-let fileName = path.basename(inputPath, '.svg') + '.geojson'
 if (commander.args.length > 1) {
   outputPath = commander.args[1];
   if (!path.extname(outputPath)) {
-    outputPath = path.join(outputPath, fileName);
+    outputPath = path.join(outputPath, outputFileName);
   }
 } else {
-  outputPath = path.join(inputPath, fileName);
+  outputPath = path.join(inputDir, outputFileName);
 }
 
 const svg = fs.readFileSync(inputPath, 'utf8');
-convertSVG(svg, {
-  center: commander.center ? commander.center.split(',').map(coord => parseFloat(coord)) : null,
-  width: parseFloat(commander.width) || null,
-  bearing: parseFloat(commander.bearing) || 0,
-  subdivideThreshold: parseFloat(commander.subdivideThreshold) || null,
-}).then(geojson => {
-  fs.writeFileSync(outputPath, JSON.stringify(geojson, null, commander.pretty ? 2 : 0));
+const convertOptions = {};
+if (options.center) {
+  convertOptions.center = options.center.split(',').map(coord => parseFloat(coord));
+}
+if (options.width) {
+  convertOptions.width = parseFloat(options.width);
+}
+if (options.wbearingidth) {
+  convertOptions.bearing = parseFloat(options.bearing);
+}
+if (options.subdivideThreshold) {
+  convertOptions.subdivideThreshold = parseFloat(options.subdivideThreshold);
+}
+try {
+  const geojson = convertSVG(svg, convertOptions)
+  fs.writeFileSync(outputPath, JSON.stringify(geojson, null, options.pretty ? 2 : 0));
   console.info('Converted SVG to GeoJSON.');
-}).catch(error => {
-  console.error(error);
-});
-
+} catch (e) {
+  console.error(e);
+}

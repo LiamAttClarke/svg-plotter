@@ -9,6 +9,7 @@ import * as Transformers from './transformers';
 const DEFAULT_CONVERT_OPTIONS: ConvertSVGOptions = {
   center: { longitude: 0, latitude: 0 },
   width: 1000e3, // 1000km
+  bearing: 0,
   subdivideThreshold: 5,
 };
 
