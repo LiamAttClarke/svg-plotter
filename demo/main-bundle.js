@@ -71,7 +71,7 @@ convertForm.addEventListener('submit', function(event) {
   event.preventDefault();
   const formData = new FormData(convertForm);
   try {
-    geojsonOutput = convertSVG(svgInput, {
+    const { geojson, errors } = convertSVG(svgInput, {
       center: {
         latitude: parseFloat(formData.get('centerLatitude')),
         longitude: parseFloat(formData.get('centerLongitude'))
@@ -80,7 +80,8 @@ convertForm.addEventListener('submit', function(event) {
       bearing: parseFloat(formData.get('bearing')),
       subdivideThreshold: parseFloat(formData.get('subdivideThreshold'))
     });
-    console.log(geojsonOutput)
+    geojsonOutput = geojson;
+    errors.forEach((e) => console.warn(e));
     downloadButton.removeAttribute('disabled');
     map.getSource('svg').setData(geojsonOutput);
     map.fitBounds(bbox(geojsonOutput), { padding: 100 });
@@ -188,6 +189,7 @@ var Transformers = require("./transformers");
 var DEFAULT_CONVERT_OPTIONS = {
     center: { longitude: 0, latitude: 0 },
     width: 1000e3,
+    bearing: 0,
     subdivideThreshold: 5,
 };
 var transformers = {
@@ -204,17 +206,23 @@ var transformers = {
 function svgNodeToFeatures(node, svgMeta, options) {
     var outputFeatures = [];
     var transformer = transformers[node.name];
+    var errors = [];
     if (transformer) {
         var _a = transformer(node, svgMeta, options), features = _a.features, children = _a.children;
         outputFeatures.push.apply(outputFeatures, features);
         children.forEach(function (n) {
-            outputFeatures.push.apply(outputFeatures, svgNodeToFeatures(n, svgMeta, options));
+            var childOutput = svgNodeToFeatures(n, svgMeta, options);
+            outputFeatures.push.apply(outputFeatures, childOutput.features);
+            errors.push.apply(errors, childOutput.errors);
         });
     }
     else {
-        console.warn("Node, '" + node.name + "' is not supported.");
+        errors.push("Node, '" + node.name + "' is not supported.");
     }
-    return outputFeatures;
+    return {
+        features: outputFeatures,
+        errors: errors,
+    };
 }
 function getSVGMetadata(parsedSVG) {
     var svgMeta = {
@@ -246,8 +254,11 @@ function convertSVG(input, options) {
     if (options === void 0) { options = {}; }
     var parsedSVG = svgson_1.parseSync(input, { camelcase: true });
     var svgMeta = getSVGMetadata(parsedSVG);
-    var features = svgNodeToFeatures(parsedSVG, svgMeta, __assign(__assign({}, DEFAULT_CONVERT_OPTIONS), options));
-    return { type: 'FeatureCollection', features: features };
+    var _a = svgNodeToFeatures(parsedSVG, svgMeta, __assign(__assign({}, DEFAULT_CONVERT_OPTIONS), options)), features = _a.features, errors = _a.errors;
+    return {
+        geojson: { type: 'FeatureCollection', features: features },
+        errors: errors,
+    };
 }
 exports.convertSVG = convertSVG;
 

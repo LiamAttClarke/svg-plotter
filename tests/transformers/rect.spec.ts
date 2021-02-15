@@ -36,7 +36,6 @@ describe('transformer: rect', () => {
     const { features } = rect(parsedSVG.children[1], svgMeta, DEFAULT_CONVERT_OPTIONS);
     expect(features.length).to.equal(1);
     const [rectFeature] = features;
-    console.log(JSON.stringify(rectFeature));
     expect(GeoJSONValidation.isFeature(rectFeature, true)).to.be.empty;
     expect(GeoJSONValidation.isPolygon(rectFeature.geometry, true)).to.be.empty;
     expect(rectFeature.geometry.coordinates).to.deep.equal([[

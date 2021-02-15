@@ -12,26 +12,29 @@ describe('svg-plotter', () => {
     const svg_noDimensions = fs.readFileSync(path.join(__dirname, 'files/no-dimensions.svg'), 'utf8');
 
     it('should convert an SVG string to valid GeoJSON', async () => {
-      const geoJSON = await convertSVG(svg_shapes);
-      expect(GeoJSONValidation.valid(geoJSON, true)).to.be.empty;
+      const { geojson, errors } = await convertSVG(svg_shapes);
+      expect(errors).to.be.empty;
+      expect(GeoJSONValidation.valid(geojson, true)).to.be.empty;
     });
 
     it('should set feature id based on options.idMapper', async () => {
-      const geoJSON = await convertSVG(svg_shapes, {
+      const { geojson, errors } = await convertSVG(svg_shapes, {
         idMapper: input => input.attributes.id
       });
+      expect(errors).to.be.empty;
       const expectedIds = ['alpha', 'bravo', 'charlie', 'delta', 'echo', 'foxtrot', 'golf', 'hotel'];
-      geoJSON.features.forEach((f, i) => {
+      geojson.features.forEach((f, i) => {
         expect(f.id).to.equal(expectedIds[i]);
       });
     });
 
     it('should set feature properties based on options.propertyMapper', async () => {
-      const geoJSON = await convertSVG(svg_shapes, {
+      const { geojson, errors } = await convertSVG(svg_shapes, {
         propertyMapper: input => ({ svgType: input.name })
       });
+      expect(errors).to.be.empty;
       const expectedSVGType = ['rect', 'rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon', 'path'];
-      geoJSON.features.forEach((f, i) => {
+      geojson.features.forEach((f, i) => {
         expect(f.properties.svgType).to.equal(expectedSVGType[i]);
       });
     });

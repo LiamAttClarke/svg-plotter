@@ -2,7 +2,7 @@ import 'mocha';
 import * as chai from 'chai';
 import { expect } from 'chai';
 import * as chaiRoughly from 'chai-roughly';
-import GeoJSONValidation from 'geojson-validation';
+import * as GeoJSONValidation from 'geojson-validation';
 import { ConvertSVGOptions, SVGMetaData } from '../src/types';
 import { EARTH_CIRCUMFERENCE } from '../src/constants';
 import Vector2 from '../src/Vector2';

@@ -76,7 +76,10 @@ if (options.subdivideThreshold) {
   convertOptions.subdivideThreshold = parseFloat(options.subdivideThreshold);
 }
 try {
-  const geojson = convertSVG(svg, convertOptions)
+  const { geojson, errors } = convertSVG(svg, convertOptions)
+  errors.forEach((e) => {
+    console.warn(e);
+  });
   fs.writeFileSync(outputPath, JSON.stringify(geojson, null, options.pretty ? 2 : 0));
   console.info('Converted SVG to GeoJSON.');
 } catch (e) {

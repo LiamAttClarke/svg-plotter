@@ -70,7 +70,7 @@ convertForm.addEventListener('submit', function(event) {
   event.preventDefault();
   const formData = new FormData(convertForm);
   try {
-    geojsonOutput = convertSVG(svgInput, {
+    const { geojson, errors } = convertSVG(svgInput, {
       center: {
         latitude: parseFloat(formData.get('centerLatitude')),
         longitude: parseFloat(formData.get('centerLongitude'))
@@ -79,7 +79,8 @@ convertForm.addEventListener('submit', function(event) {
       bearing: parseFloat(formData.get('bearing')),
       subdivideThreshold: parseFloat(formData.get('subdivideThreshold'))
     });
-    console.log(geojsonOutput)
+    geojsonOutput = geojson;
+    errors.forEach((e) => console.warn(e));
     downloadButton.removeAttribute('disabled');
     map.getSource('svg').setData(geojsonOutput);
     map.fitBounds(bbox(geojsonOutput), { padding: 100 });

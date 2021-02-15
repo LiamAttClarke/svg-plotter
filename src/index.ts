@@ -25,19 +25,29 @@ const transformers: { [key: string]: SVGNodeTransformer } = {
   rect: Transformers.rect,
 };
 
-function svgNodeToFeatures(node: INode, svgMeta: SVGMetaData, options: ConvertSVGOptions) {
-  const outputFeatures = [];
+function svgNodeToFeatures(
+  node: INode,
+  svgMeta: SVGMetaData,
+  options: ConvertSVGOptions,
+): { features: GeoJSON.Feature[], errors: string[] } {
+  const outputFeatures: GeoJSON.Feature[] = [];
   const transformer = transformers[node.name];
+  const errors: string[] = [];
   if (transformer) {
     const { features, children } = transformer(node, svgMeta, options);
     outputFeatures.push(...features);
     children.forEach((n) => {
-      outputFeatures.push(...svgNodeToFeatures(n, svgMeta, options));
+      const childOutput = svgNodeToFeatures(n, svgMeta, options);
+      outputFeatures.push(...childOutput.features);
+      errors.push(...childOutput.errors);
     });
   } else {
-    console.warn(`Node, '${node.name}' is not supported.`);
+    errors.push(`Node, '${node.name}' is not supported.`);
   }
-  return outputFeatures;
+  return {
+    features: outputFeatures,
+    errors,
+  };
 }
 
 export function getSVGMetadata(parsedSVG: INode): SVGMetaData {
@@ -65,17 +75,25 @@ export function getSVGMetadata(parsedSVG: INode): SVGMetaData {
   return svgMeta;
 }
 
+export interface ConvertSVGOutput {
+  geojson: GeoJSON.FeatureCollection;
+  errors: string[];
+}
+
 export function convertSVG(
   input: string,
   options: ConvertSVGOptions = {},
-): GeoJSON.FeatureCollection {
+): ConvertSVGOutput {
   // Parse SVG
   const parsedSVG = parseSVG(input, { camelcase: true });
   const svgMeta = getSVGMetadata(parsedSVG);
   // Convert SVG to GeoJSON
-  const features = svgNodeToFeatures(parsedSVG, svgMeta, {
+  const { features, errors } = svgNodeToFeatures(parsedSVG, svgMeta, {
     ...DEFAULT_CONVERT_OPTIONS,
     ...options,
   });
-  return { type: 'FeatureCollection', features };
+  return {
+    geojson: { type: 'FeatureCollection', features },
+    errors,
+  };
 }
