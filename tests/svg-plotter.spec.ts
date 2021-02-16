@@ -26,7 +26,7 @@ describe('svg-plotter', () => {
       });
     });
 
-    it('should parse svg dimensions given a viewbox attribute', () => {
+    it('should parse svg dimensions given a viewBox attribute', () => {
       const parsedSVG = parseSVG(SVG_VIEWBOX, { camelcase: true });
       const meta = getSVGMetadata(parsedSVG);
       expect(meta).to.deep.equal({
@@ -72,9 +72,9 @@ describe('svg-plotter', () => {
     it('should throw error if SVG does not have a width or height attribute', () => {
       try {
         convertSVG(SVG_NO_DIMENSIONS);
-        throw new Error('Error was not thrown for missing SVG width/height/viewbox attributes.');
+        throw new Error('Error was not thrown for missing SVG width/height/viewBox attributes.');
       } catch ({ message }) {
-        expect(message).to.equal('SVG must have a viewbox or width/height attributes.');
+        expect(message).to.equal('SVG must have a viewBox or width/height attributes.');
       }
     });
 

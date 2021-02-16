@@ -57,8 +57,8 @@ export function getSVGMetadata(parsedSVG: INode): SVGMetaData {
     width: 0,
     height: 0,
   };
-  if (parsedSVG.attributes.viewbox) {
-    const coords = parsedSVG.attributes.viewbox.split(' ');
+  if (parsedSVG.attributes.viewBox) {
+    const coords = parsedSVG.attributes.viewBox.split(' ');
     svgMeta.x = parseFloat(coords[0]);
     svgMeta.y = parseFloat(coords[1]);
     svgMeta.width = parseFloat(coords[2]) - svgMeta.x;
@@ -69,7 +69,7 @@ export function getSVGMetadata(parsedSVG: INode): SVGMetaData {
     svgMeta.width = parseFloat(parsedSVG.attributes.width) - svgMeta.x;
     svgMeta.height = parseFloat(parsedSVG.attributes.height) - svgMeta.y;
   } else {
-    throw new Error('SVG must have a viewbox or width/height attributes.');
+    throw new Error('SVG must have a viewBox or width/height attributes.');
   }
   return svgMeta;
 }

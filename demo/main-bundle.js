@@ -21,7 +21,7 @@ const map = new mapbox.Map({
   center: [-79.411079, 43.761539],
   zoom: 9
 });
-map.on('load', function() {
+map.on('load', () => {
   map.addSource('svg', {
     "type": "geojson",
     "data": {
@@ -62,7 +62,7 @@ svgFileInput.addEventListener('change', (event) => {
     const fileReader = new FileReader();
     fileReader.onload = function(event) {
       svgInput = event.target.result;
-      svgPreviewImage.src = 'data:image/svg+xml;base64,' + btoa(event.target.result);
+      svgPreviewImage.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(event.target.result)));
     };
     fileReader.readAsText(event.target.files[0]);
   }
@@ -236,8 +236,8 @@ function getSVGMetadata(parsedSVG) {
         width: 0,
         height: 0,
     };
-    if (parsedSVG.attributes.viewbox) {
-        var coords = parsedSVG.attributes.viewbox.split(' ');
+    if (parsedSVG.attributes.viewBox) {
+        var coords = parsedSVG.attributes.viewBox.split(' ');
         svgMeta.x = parseFloat(coords[0]);
         svgMeta.y = parseFloat(coords[1]);
         svgMeta.width = parseFloat(coords[2]) - svgMeta.x;
@@ -250,7 +250,7 @@ function getSVGMetadata(parsedSVG) {
         svgMeta.height = parseFloat(parsedSVG.attributes.height) - svgMeta.y;
     }
     else {
-        throw new Error('SVG must have a viewbox or width/height attributes.');
+        throw new Error('SVG must have a viewBox or width/height attributes.');
     }
     return svgMeta;
 }

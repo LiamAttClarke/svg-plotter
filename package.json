@@ -8,7 +8,7 @@
   },
   "scripts": {
     "postinstall": "husky install",
-    "precommit": "NODE_ENV=production npm run lint && npm run test && npm run build && git add dist/* docs/* demo/*",
+    "precommit": "NODE_ENV=production npm run lint && npm test && npm run build && git add dist/* docs/* demo/*",
     "prepublishOnly": "pinst --disable",
     "postpublish": "pinst --enable",
     "build": "tsc && npm run build:docs && npm run build:demo",

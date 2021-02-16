@@ -59,8 +59,8 @@ function getSVGMetadata(parsedSVG) {
         width: 0,
         height: 0,
     };
-    if (parsedSVG.attributes.viewbox) {
-        var coords = parsedSVG.attributes.viewbox.split(' ');
+    if (parsedSVG.attributes.viewBox) {
+        var coords = parsedSVG.attributes.viewBox.split(' ');
         svgMeta.x = parseFloat(coords[0]);
         svgMeta.y = parseFloat(coords[1]);
         svgMeta.width = parseFloat(coords[2]) - svgMeta.x;
@@ -73,7 +73,7 @@ function getSVGMetadata(parsedSVG) {
         svgMeta.height = parseFloat(parsedSVG.attributes.height) - svgMeta.y;
     }
     else {
-        throw new Error('SVG must have a viewbox or width/height attributes.');
+        throw new Error('SVG must have a viewBox or width/height attributes.');
     }
     return svgMeta;
 }
