@@ -42,7 +42,7 @@ function svgNodeToFeatures(
       errors.push(...childOutput.errors);
     });
   } else {
-    errors.push(`Node, '${node.name}' is not supported.`);
+    errors.push(`Skipping unsupported node: ${node.name}`);
   }
   return {
     features: outputFeatures,
@@ -51,15 +51,14 @@ function svgNodeToFeatures(
 }
 
 export function getSVGMetadata(parsedSVG: INode): SVGMetaData {
-  // TODO: Account for different width and height units other than px
   const svgMeta: SVGMetaData = {
     x: 0,
     y: 0,
     width: 0,
     height: 0,
   };
-  if (parsedSVG.attributes.viewBox) {
-    const coords = parsedSVG.attributes.viewBox.split(' ');
+  if (parsedSVG.attributes.viewbox) {
+    const coords = parsedSVG.attributes.viewbox.split(' ');
     svgMeta.x = parseFloat(coords[0]);
     svgMeta.y = parseFloat(coords[1]);
     svgMeta.width = parseFloat(coords[2]) - svgMeta.x;

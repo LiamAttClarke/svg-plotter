@@ -56,10 +56,28 @@ describe('Vector2', () => {
 
   });
 
+  describe('addScalar', () => {
+
+    it('should return the sum of the vector and a scalar', () => {
+      expect(new Vector2(1, 2).addScalar(2)).to.roughly.deep.equal(new Vector2(3, 4));
+      expect(new Vector2(1, 2).addScalar(-3)).to.roughly.deep.equal(new Vector2(-2, -1));
+    });
+
+  });
+
   describe('subtract', () => {
 
     it('should return the difference of two vectors', () => {
       expect(new Vector2(1, 2).subtract(new Vector2(1, 1))).to.roughly.deep.equal(new Vector2(0, 1));
+    });
+
+  });
+
+  describe('subtractScalar', () => {
+
+    it('should return the difference of the vector and a scalar', () => {
+      expect(new Vector2(1, 2).subtractScalar(2)).to.roughly.deep.equal(new Vector2(-1, 0));
+      expect(new Vector2(1, 2).subtractScalar(-3)).to.roughly.deep.equal(new Vector2(4, 5));
     });
 
   });

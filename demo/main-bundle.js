@@ -7,6 +7,7 @@ const { convertSVG } = require('../dist');
 const svgPreviewImage = document.getElementById('svgPreviewImage');
 const convertForm = document.getElementById('convertForm');
 const svgFileInput = document.getElementById('svgFileInput');
+const convertButton = document.getElementById('convertButton');
 const downloadButton = document.getElementById('downloadButton');
 
 let svgInput = null;
@@ -56,7 +57,7 @@ map.on('load', function() {
   });
 });
 
-svgFileInput.addEventListener('change', function(event) {
+svgFileInput.addEventListener('change', (event) => {
   if (event.target.files.length) {
     const fileReader = new FileReader();
     fileReader.onload = function(event) {
@@ -67,7 +68,7 @@ svgFileInput.addEventListener('change', function(event) {
   }
 });
 
-convertForm.addEventListener('submit', function(event) {
+convertButton.addEventListener('click', (event) => {
   event.preventDefault();
   const formData = new FormData(convertForm);
   try {
@@ -84,14 +85,17 @@ convertForm.addEventListener('submit', function(event) {
     errors.forEach((e) => console.warn(e));
     downloadButton.removeAttribute('disabled');
     map.getSource('svg').setData(geojsonOutput);
-    map.fitBounds(bbox(geojsonOutput), { padding: 100 });
+    map.fitBounds(bbox(geojsonOutput), {
+      padding: 100,
+      offset: [100, 0]
+    });
   } catch(e) {
     alert('Failed to convert SVG. See logs for more detail.');
     console.error(e);
   }
 });
 
-downloadButton.addEventListener('click', function() {
+downloadButton.addEventListener('click', () => {
   if (geojsonOutput) {
     const formData = new FormData(convertForm);
     const blob = new Blob([JSON.stringify(geojsonOutput, null, 2)], { type: 'application/json' });
@@ -217,7 +221,7 @@ function svgNodeToFeatures(node, svgMeta, options) {
         });
     }
     else {
-        errors.push("Node, '" + node.name + "' is not supported.");
+        errors.push("Skipping unsupported node: " + node.name);
     }
     return {
         features: outputFeatures,
@@ -231,8 +235,8 @@ function getSVGMetadata(parsedSVG) {
         width: 0,
         height: 0,
     };
-    if (parsedSVG.attributes.viewBox) {
-        var coords = parsedSVG.attributes.viewBox.split(' ');
+    if (parsedSVG.attributes.viewbox) {
+        var coords = parsedSVG.attributes.viewbox.split(' ');
         svgMeta.x = parseFloat(coords[0]);
         svgMeta.y = parseFloat(coords[1]);
         svgMeta.width = parseFloat(coords[2]) - svgMeta.x;

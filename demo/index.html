@@ -4,72 +4,91 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>SVGEO - SVG to GeoJSON Converter</title>
-  <link rel="stylesheet" href="https://atticus.dev/styles/base.css">
+  <title>svg-plotter - SVG to GeoJSON Converter</title>
+  <link rel="stylesheet" href="normalize.css">
   <link rel="stylesheet" href="main.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:300,400,700">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"></head>
   <link rel="stylesheet" href="https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.1/mapbox-gl.css" />
 </head>
 <body>
-  <div class="page">
-    <div class="site-header">
-      <div class="left">
-        <h1 class="site-title">SVGEO</h1>
-        <span class="site-tagline">SVG to GeoJSON Converter</span>
-      </div>
-      <div class="right">
-        <span>Author: <a href="https://atticus.dev">Liam A. Clarke</a></span><br>
-        <span>Code: <a href="https://github.com/LiamAttClarke/svgeo">github.com/LiamAttClarke/svgeo</a></span><br>
-        <span>Feedback: <a href="mailto:liam.att.clarke@gmail.com">liam.att.clarke@gmail.com</a></span>
-      </div>
-    </div>
-    <section class="page-section">
-      <div class="card">
-        <header class="card-header">
-          <h2>Convert</h2>
-        </header>
-        <form id="convertForm">
-          <div class="left">
-            <div class="svg-preview-container">
-              <img id="svgPreviewImage" src="" />
+  <div id="previewMap"></div>
+  <div class="map-overlay">
+    <form id="convertForm" class="top-left panel full-height">
+      <header class="panel__header">
+        <h1 class="site-title">SVG Plotter</h1>
+        <p class="site-info">Convert SVG files to GeoJSON</p>
+        <p class="site-info">By: <a href="https://atticus.dev/">atticus.dev</a></p>
+        <p class="site-info">Source: <a href="https://github.com/LiamAttClarke/svg-plotter">github.com/LiamAttClarke/svg-plotter</a></p>
+      </header>
+      <div class="panel__content">
+        <label name="svgFile" class="input--image">
+          <input id="svgFileInput" name="svgFile" type="file" accept=".svg" required />
+          <span class="placeholder">Click to select .svg file</span>
+          <img id="svgPreviewImage" src="" />
+        </label>
+        <div class="input-group">
+          <label for="centerLatitudeInput">Center:</label>
+          <div class="row">
+            <div>
+              <input
+                id="centerLatitudeInput"
+                name="centerLatitude"
+                type="number"
+                value="43.761539"
+                step="1"
+                size="10"
+                required />
+              <p class="hint">Latitude</p>
+            </div>
+            <div>
+              <input
+                id="centerLongitudeInput"
+                name="centerLongitude"
+                type="number"
+                value="-79.411079"
+                step="1"
+                size="10"
+                required />
+              <p class="hint">Longitude</p>
             </div>
           </div>
-          <div class="right">
-            <label for="svgFileInput">SVG File:</label>
-            <input id="svgFileInput" name="svgFile" type="file" accept=".svg" required />
-            <hr>
-            <label for="centerLatitudeInput">Latitude:</label>
-            <input id="centerLatitudeInput" name="centerLatitude" type="text" value="43.761539" size="10" required />&nbsp;
-            <label for="centerLongitudeInput">Longitude:</label>
-            <input id="centerLongitudeInput" name="centerLongitude" type="text" value="-79.411079" size="10" required />
-            <p class="input-option-description">Geographic coordinate to center the SVG geometry around.</p>
-            <hr>
-            <label for="widthInput">Width:</label>
-            <input id="widthInput" name="width" type="text" value="1000000" size="10" required />
-            <p class="input-option-description">Width in metres.</p>
-            <hr>
-            <label for="bearingInput">Bearing:</label>
-            <input id="bearingInput" name="bearing" type="text" value="0" size="3">
-            <p class="input-option-description">Angle in degrees to rotate geometry clockwise around it's center.</p>
-            <hr>
-            <label for="subdivideThresholdInput">Curve Subdivide Threshold:</label>
-            <input id="subdivideThresholdInput" name="subdivideThreshold" type="text" value="5" size="2" required />
-            <p class="input-option-description">Angle in degrees at which to subdivide curves. Decrease this number for smoother curves.</p>
-            <button id="inputSubmit" class="large" type="submit">Convert <i class="fas fa-globe-americas"></i></button>
-          </div>
-        </form>
+        </div>
+        <div class="input-group">
+          <label for="widthInput">Width:</label>
+          <input
+            id="widthInput"
+            name="width"
+            type="number"
+            value="1000000"
+            step="1000"
+            size="10"
+            required />
+          <p class="hint">Metres</p>
+        </div>
+        <div class="input-group">
+          <label for="bearingInput">Bearing:</label>
+          <input id="bearingInput" name="bearing" type="number" value="0" step="1" size="3">
+          <p class="hint">Angle in degrees to rotate geometry clockwise around it's center.</p>
+        </div>
+        <div class="input-group">
+          <label for="subdivideThresholdInput">Curve Subdivide Threshold:</label>
+          <input id="subdivideThresholdInput" name="subdivideThreshold" type="number" value="5" step="1" size="2" required />
+          <p class="hint">Angular threshold for subdividing curves. Smaller values will produce smoother curves.</p>
+        </div>
       </div>
-    </section>
-    <section id="previewSection" class="page-section">
-      <div class="card">
-        <header class="card-header">
-          <h2>Preview &amp; Download</h2>
-          <button id="downloadButton" class="large" disabled>Download <i class="fa fa-download"></i></button>
-        </header>
-        <div id="previewMap"></div>
-      </div>
-    </section>
+      <footer class="panel__footer">
+        <div class="button-group">
+          <button id="convertButton" class="primary" type="submit">
+            <i class="icon fas fa-cogs"></i>
+            Convert
+          </button>
+          <button id="downloadButton" disabled>
+            <i class="icon fas fa-file-download"></i>Download
+          </button>
+        </div>
+      </footer>
+    </form>
   </div>
 </body>
 <script src="main-bundle.js"></script>

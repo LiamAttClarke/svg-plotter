@@ -1,6 +1,10 @@
 # svg-plotter
 Convert SVG files to GeoJSON
 
+[Online Utility](/demo)
+
+[API Documentation](/docs)
+
 ## Usage
 
 svg-plotter can be used in both NodeJS and the browser.
@@ -9,6 +13,19 @@ Install using npm:
 
 ```
 npm install svg-plotter
+```
+
+#### Example:
+```javascript
+const { convertSVG } = require('svg-plotter');
+
+const svg = `
+    <svg height="512" width="512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+        <line x1="128" y1="128" x2="384" y2="384" stroke="black" />
+    </svg>
+`;
+
+const { geojson, errors } = convertSVG(svg);
 ```
 
 ## CLI Usage
@@ -27,14 +44,3 @@ svg-plotter ./path/to/input.svg
 ```
 svg-plotter --help
 ```
-
-## TODO
-- Polish demo site
-- Convert cli to typescript
-- Update README
-- Add support for composite paths (convert to multi-polygons)
-- Add support for percentage units
-- Add warning messages to convertSVG output and demo page
-- Add missing unit tests
-- Contribute missing @types typings
-- Publish to NPM registry

@@ -1,0 +1,7 @@
+<svg width="512" height="512" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <pattern id="pattern-checkers" x="0" y="0" width="256" height="256" patternUnits="userSpaceOnUse">    
+    <rect class="checker" x="0" width="128" height="128" y="0"></rect>
+    <rect class="checker" x="128" width="128" height="128" y="128"></rect>
+  </pattern>
+  <rect x="0" y="0" width="512" height="512" fill="url(#pattern-checkers)"></rect>
+</svg>

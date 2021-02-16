@@ -76,8 +76,6 @@ describe('createFeature', () => {
 
 describe('svgPointToCoordinate', () => {
 
-  // TODO: Add test case for svg with x/y and viewbox attributes
-
   const svgMeta: SVGMetaData = { x: 0, y: 0, width: 512, height: 512 };
 
   it('should return the point projected with a mercator projection', () => {
