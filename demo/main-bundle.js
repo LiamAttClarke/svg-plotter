@@ -96,7 +96,8 @@ convertButton.addEventListener('click', (event) => {
   }
 });
 
-downloadButton.addEventListener('click', () => {
+downloadButton.addEventListener('click', (event) => {
+  event.preventDefault();
   if (geojsonOutput) {
     const formData = new FormData(convertForm);
     const blob = new Blob([JSON.stringify(geojsonOutput, null, 2)], { type: 'application/json' });

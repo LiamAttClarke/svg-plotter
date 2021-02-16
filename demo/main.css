@@ -193,3 +193,8 @@ input:focus {
 .input-group .row > *:last-child {
   margin-right: 0;
 }
+
+.mapboxgl-ctrl-bottom-left {
+  left: 380px !important;
+  bottom: 16px !important;
+}
