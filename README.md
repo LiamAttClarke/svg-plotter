@@ -1,9 +1,9 @@
 # svg-plotter
 Convert SVG files to GeoJSON
 
-[Online Utility](/demo)
+[Online Utility](https://atticus.dev/svg-plotter/demo)
 
-[API Documentation](/docs)
+[API Documentation](https://atticus.dev/svg-plotter/docs)
 
 ## Usage
 

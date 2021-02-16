@@ -87,6 +87,7 @@ convertButton.addEventListener('click', (event) => {
     map.getSource('svg').setData(geojsonOutput);
     map.fitBounds(bbox(geojsonOutput), {
       padding: 100,
+      // Offsetting to righ to accomodate floating control panel
       offset: [100, 0]
     });
   } catch(e) {
