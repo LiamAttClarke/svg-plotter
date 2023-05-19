@@ -1,0 +1,28 @@
+{
+  "imports": {
+    "@types/geojson": "https://esm.sh/@types/geojson@7946.0.10",
+    "dnt/": "https://deno.land/x/dnt@0.35.0/",
+    "geojson-validation": "https://esm.sh/geojson-validation@1.0.2",
+    "std/": "https://deno.land/std@0.187.0/",
+    "svg-path-parser": "https://esm.sh/svg-path-parser@1.1.0",
+    "svgson": "https://esm.sh/svgson@5.2.1",
+    "ya-svg-transform": "https://esm.sh/ya-svg-transform@0.0.1"
+  },
+  "exclude": [
+    "demo/"
+  ],
+  "test": {
+    "include": [
+      "tests/"
+    ]
+  },
+  "tasks": {
+    "test": "deno test --allow-read",
+    "build:npm": "deno run --allow-env --allow-read --allow-write --allow-net --allow-run ./scripts/build_npm.ts",
+    "compile": "deno compile --allow-read --allow-write --output=./bin/svg-plotter ./src/cli.ts",
+    "compile:x86_64-unknown-linux-gnu": "deno compile --allow-read --allow-write --target=x86_64-unknown-linux-gnu --output=./bin/svg-plotter ./src/cli.ts",
+    "compile:x86_64-pc-windows-msvc": "deno compile --allow-read --allow-write --target=x86_64-pc-windows-msvc --output=./bin/svg-plotter ./src/cli.ts",
+    "compile:x86_64-apple-darwin": "deno compile --allow-read --allow-write --target=x86_64-apple-darwin --output=./bin/svg-plotter ./src/cli.ts",
+    "compile:aarch64-apple-darwin": "deno compile --allow-read --allow-write --target=aarch64-apple-darwin --output=./bin/svg-plotter ./src/cli.ts"
+  }
+}

@@ -1,7 +1,7 @@
-import { SVGNodeTransformer } from '../types';
-import * as mathUtils from '../math-utils';
-import { createFeature, svgPointToCoordinate } from '../utils';
-import Vector2 from '../Vector2';
+import { SVGNodeTransformer } from "../types.ts";
+import * as mathUtils from "../lib/math-utils.ts";
+import { createFeature, svgPointToCoordinate } from "../lib/utils.ts";
+import { Vector2 } from "../lib/Vector2.ts";
 
 /** Reference: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/rect */
 const rectTransformer: SVGNodeTransformer = (input, svgMeta, options) => {
@@ -20,19 +20,37 @@ const rectTransformer: SVGNodeTransformer = (input, svgMeta, options) => {
       0.75,
     );
     const topRightCorner = mathUtils.drawCurve(
-      (t) => mathUtils.pointOnEllipse(new Vector2(x + width - rx, y + ry), rx, ry, t),
+      (t) =>
+        mathUtils.pointOnEllipse(
+          new Vector2(x + width - rx, y + ry),
+          rx,
+          ry,
+          t,
+        ),
       options.subdivideThreshold,
       0.75,
       1,
     );
     const bottomRightCorner = mathUtils.drawCurve(
-      (t) => mathUtils.pointOnEllipse(new Vector2(x + width - rx, y + height - ry), rx, ry, t),
+      (t) =>
+        mathUtils.pointOnEllipse(
+          new Vector2(x + width - rx, y + height - ry),
+          rx,
+          ry,
+          t,
+        ),
       options.subdivideThreshold,
       0,
       0.25,
     );
     const bottomLeftCorner = mathUtils.drawCurve(
-      (t) => mathUtils.pointOnEllipse(new Vector2(x + rx, y + height - ry), rx, ry, t),
+      (t) =>
+        mathUtils.pointOnEllipse(
+          new Vector2(x + rx, y + height - ry),
+          rx,
+          ry,
+          t,
+        ),
       options.subdivideThreshold,
       0.25,
       0.5,
@@ -60,11 +78,15 @@ const rectTransformer: SVGNodeTransformer = (input, svgMeta, options) => {
     ring.push(ring[0]);
   }
   const id = options.idMapper ? options.idMapper(input) : null;
-  const properties = options.propertyMapper ? options.propertyMapper(input) : null;
+  const properties = options.propertyMapper
+    ? options.propertyMapper(input)
+    : null;
   const geometry: GeoJSON.Polygon = {
-    type: 'Polygon',
+    type: "Polygon",
     coordinates: [
-      ring.map((p) => svgPointToCoordinate(p, svgMeta, options, input.attributes.transform)),
+      ring.map((p) =>
+        svgPointToCoordinate(p, svgMeta, options, input.attributes.transform)
+      ),
     ],
   };
   return {

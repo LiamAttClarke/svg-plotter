@@ -1,7 +1,7 @@
-export { default as ellipse } from './ellipse';
-export { default as group } from './group';
-export { default as line } from './line';
-export { default as path } from './path';
-export { default as polygon } from './polygon';
-export { default as polyline } from './polyline';
-export { default as rect } from './rect';
+export { default as ellipse } from "./ellipse.ts";
+export { default as group } from "./group.ts";
+export { default as line } from "./line.ts";
+export { default as path } from "./path.ts";
+export { default as polygon } from "./polygon.ts";
+export { default as polyline } from "./polyline.ts";
+export { default as rect } from "./rect.ts";

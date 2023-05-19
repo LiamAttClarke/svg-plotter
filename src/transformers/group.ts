@@ -1,6 +1,6 @@
-import { INode } from 'svgson';
-import * as svgTransformParser from 'ya-svg-transform';
-import { SVGNodeTransformer } from '../types';
+import { INode } from "svgson";
+import * as svgTransformParser from "ya-svg-transform";
+import { SVGNodeTransformer } from "../types.ts";
 
 /** Reference: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/g */
 const groupTransformer: SVGNodeTransformer = (node) => {
@@ -11,7 +11,7 @@ const groupTransformer: SVGNodeTransformer = (node) => {
     : null;
   if (groupTransform && children.length) {
     // Apply transform attribute to children recursively
-    children = children.map((child) => {
+    children = children.map((child: any) => {
       let outputChild = child;
       if (node.attributes.transform) {
         // Clone child
@@ -21,7 +21,8 @@ const groupTransformer: SVGNodeTransformer = (node) => {
           const childTransform = svgTransformParser
             .transform(child.attributes.transform)
             .asMatrix();
-          outputChild.attributes.transform = groupTransform.dot(childTransform).render();
+          outputChild.attributes.transform = groupTransform.dot(childTransform)
+            .render();
         } else {
           outputChild.attributes.transform = node.attributes.transform;
         }
