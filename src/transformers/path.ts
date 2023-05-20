@@ -5,6 +5,7 @@ import { Vector2 } from "../lib/Vector2.ts";
 import * as mathUtils from "../lib/math-utils.ts";
 
 // Command types are missing x0, y0 properties
+// TODO: Update types
 interface EllipticalArcCommand extends svgPathParser.EllipticalArcCommand {
   x0: number;
   y0: number;
