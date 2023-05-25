@@ -1,13 +1,14 @@
 {
   "imports": {
     "@types/geojson": "https://esm.sh/@types/geojson@7946.0.10",
-    "dnt/": "https://deno.land/x/dnt@0.35.0/",
+    "dnt/": "https://github.com/LiamAttClarke/dnt/raw/fix/test-runner-file-paths/",
     "geojson-validation": "https://esm.sh/geojson-validation@1.0.2",
-    "std/": "https://deno.land/std@0.187.0/",
+    "std/": "https://deno.land/std@0.189.0/",
+    "fs/": "https://deno.land/std/fs@0.189.0/",
     "svg-path-parser": "https://esm.sh/svg-path-parser@1.1.0",
     "@types/svg-path-parser": "https://esm.sh/@types/svg-path-parser@1.1.3",
     "svgson": "https://esm.sh/svgson@5.2.1",
-    "ya-svg-transform": "https://esm.sh/ya-svg-transform@0.0.1"
+    "ya-svg-transform": "https://esm.sh/ya-svg-transform@0.0.3"
   },
   "exclude": [
     "demo/"

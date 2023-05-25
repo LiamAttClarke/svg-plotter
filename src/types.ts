@@ -1,6 +1,4 @@
 /// <reference types="@types/geojson" />
-// TODO: Remove when this issue is resolved: https://github.com/denoland/dnt/issues/297
-/// <reference types="@types/svg-path-parser" />
 // TODO: Replace with https://github.com/DefinitelyTyped/DefinitelyTyped/pull/65551
 /// <reference path="./typings/geojson-validation.d.ts" />
 
