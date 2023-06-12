@@ -25,6 +25,7 @@ await build({
     devDependencies: {
       // TODO: Remove when this issue is resolved: https://github.com/denoland/dnt/issues/297
       "@types/svg-path-parser": "1.1.3",
+      "@types/geojson-validation": "1.0.0",
     },
   },
   postBuild() {
@@ -34,6 +35,7 @@ await build({
     fs.copySync("tests/files", "npm/esm/src/tests/files");
     fs.copySync("tests/files", "npm/script/src/tests/files");
     // Delete unwanted node_modules outputs
+    // Issue: https://github.com/denoland/dnt/issues/306
     Deno.removeSync("npm/esm/node_modules", { recursive: true });
     Deno.removeSync("npm/script/node_modules", { recursive: true });
   },
