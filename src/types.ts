@@ -1,6 +1,4 @@
 /// <reference types="@types/geojson" />
-// TODO: Replace with https://github.com/DefinitelyTyped/DefinitelyTyped/pull/65551
-/// <reference path="./typings/geojson-validation.d.ts" />
 
 import { INode } from "svgson";
 import { Coordinate } from "./lib/gis-utils.ts";
