@@ -22,10 +22,11 @@ interface QuadraticCurveToCommand extends svgPathParser.QuadraticCurveToCommand 
 
 /** Reference:  https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths */
 const pathTransformer: SVGNodeTransformer = (input, svgMeta, options) => {
-  const polygons: number[][][] = [];
+  const polygons: number[][][][] = [];
   const lineStrings: number[][][] = [];
   const points: number[][] = [];
   let currentLineString: number[][] = [];
+  let currentPolygon: number[][][] = [];
   let previousCurveHandle: Vector2 = null;
   const pathCommands = svgPathParser.makeAbsolute(svgPathParser.parseSVG(input.attributes.d));
   pathCommands.forEach((pathCommand, i) => {
@@ -104,15 +105,29 @@ const pathTransformer: SVGNodeTransformer = (input, svgMeta, options) => {
       currentLineString = currentLineString.concat(curvePoints);
     } else if (pathCommand.code === 'Z') {
       currentLineString.push(currentLineString[0]);
-      polygons.push(currentLineString);
+
+      const isLastCommand = i === pathCommands.length - 1;
+      currentPolygon.push(currentLineString);
+
+      if (isLastCommand) {
+        polygons.push(currentPolygon);
+        currentPolygon = [];
+      }
+
       currentLineString = [];
     }
   });
+
+  if (currentPolygon.length) {
+    polygons.push(currentPolygon);
+  }
+
   if (currentLineString.length === 1) {
     points.push(currentLineString[0]);
   } else if (currentLineString.length > 1) {
     lineStrings.push(currentLineString);
   }
+
   const features: GeoJSON.Feature[] = [];
   const properties = options.propertyMapper ? options.propertyMapper(input) : null;
   if (points.length) {
@@ -140,7 +155,7 @@ const pathTransformer: SVGNodeTransformer = (input, svgMeta, options) => {
       const id = options.idMapper ? options.idMapper(input) : null;
       const geometry: GeoJSON.Polygon = {
         type: 'Polygon',
-        coordinates: [polygon],
+        coordinates: polygon,
       };
       return createFeature(geometry, id, properties);
     });

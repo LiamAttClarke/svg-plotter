@@ -537,6 +537,7 @@ var pathTransformer = function (input, svgMeta, options) {
     var lineStrings = [];
     var points = [];
     var currentLineString = [];
+    var currentPolygon = [];
     var previousCurveHandle = null;
     var pathCommands = svgPathParser.makeAbsolute(svgPathParser.parseSVG(input.attributes.d));
     pathCommands.forEach(function (pathCommand, i) {
@@ -602,10 +603,18 @@ var pathTransformer = function (input, svgMeta, options) {
         }
         else if (pathCommand.code === 'Z') {
             currentLineString.push(currentLineString[0]);
-            polygons.push(currentLineString);
+            var isLastCommand = i === pathCommands.length - 1;
+            currentPolygon.push(currentLineString);
+            if (isLastCommand) {
+                polygons.push(currentPolygon);
+                currentPolygon = [];
+            }
             currentLineString = [];
         }
     });
+    if (currentPolygon.length) {
+        polygons.push(currentPolygon);
+    }
     if (currentLineString.length === 1) {
         points.push(currentLineString[0]);
     }
@@ -639,7 +648,7 @@ var pathTransformer = function (input, svgMeta, options) {
             var id = options.idMapper ? options.idMapper(input) : null;
             var geometry = {
                 type: 'Polygon',
-                coordinates: [polygon],
+                coordinates: polygon,
             };
             return utils_1.createFeature(geometry, id, properties);
         });
