@@ -2,9 +2,10 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var utils_1 = require("../utils");
 var Vector2_1 = require("../Vector2");
-var lineTransformer = function (input, svgMeta, options) {
+var lineTransformer = function (stack, svgMeta, options) {
+    var input = stack.pop();
     var id = options.idMapper ? options.idMapper(input) : null;
-    var properties = options.propertyMapper ? options.propertyMapper(input) : null;
+    var properties = options.propertyMapper ? options.propertyMapper(input, { stack: stack }) : null;
     var geometry = {
         type: 'LineString',
         coordinates: [

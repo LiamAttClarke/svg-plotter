@@ -14,6 +14,7 @@
     "build": "tsc && npm run build:docs && npm run build:demo",
     "build:docs": "typedoc ./src/index.ts",
     "build:demo": "./node_modules/.bin/browserify ./demo/main.js -o ./demo/main-bundle.js",
+    "dev": "tsc --watch",
     "test": "ts-mocha -p tsconfig.json tests/*.spec.ts --recursive",
     "lint": "eslint 'src/**/*.{js,ts}' --fix"
   },

@@ -3,7 +3,8 @@ import * as svgTransformParser from 'ya-svg-transform';
 import { SVGNodeTransformer } from '../types';
 
 /** Reference: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/g */
-const groupTransformer: SVGNodeTransformer = (node) => {
+const groupTransformer: SVGNodeTransformer = (stack) => {
+  const node = stack.pop();
   const features: Array<GeoJSON.Feature> = [];
   let { children } = node;
   const groupTransform = node.attributes.transform

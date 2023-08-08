@@ -4,7 +4,8 @@ var svgPathParser = require("svg-path-parser");
 var utils_1 = require("../utils");
 var Vector2_1 = require("../Vector2");
 var mathUtils = require("../math-utils");
-var pathTransformer = function (input, svgMeta, options) {
+var pathTransformer = function (stack, svgMeta, options) {
+    var input = stack.pop();
     var polygons = [];
     var lineStrings = [];
     var points = [];
@@ -94,7 +95,7 @@ var pathTransformer = function (input, svgMeta, options) {
         lineStrings.push(currentLineString);
     }
     var features = [];
-    var properties = options.propertyMapper ? options.propertyMapper(input) : null;
+    var properties = options.propertyMapper ? options.propertyMapper(input, { stack: stack }) : null;
     if (points.length) {
         points.forEach(function (point) {
             var id = options.idMapper ? options.idMapper(input) : null;

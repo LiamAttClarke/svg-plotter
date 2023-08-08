@@ -10,7 +10,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var mathUtils = require("../math-utils");
 var utils_1 = require("../utils");
 var Vector2_1 = require("../Vector2");
-var rectTransformer = function (input, svgMeta, options) {
+var rectTransformer = function (stack, svgMeta, options) {
+    var input = stack.pop();
     var x = parseFloat(input.attributes.x);
     var y = parseFloat(input.attributes.y);
     var width = parseFloat(input.attributes.width);
@@ -35,7 +36,7 @@ var rectTransformer = function (input, svgMeta, options) {
         ring.push(ring[0]);
     }
     var id = options.idMapper ? options.idMapper(input) : null;
-    var properties = options.propertyMapper ? options.propertyMapper(input) : null;
+    var properties = options.propertyMapper ? options.propertyMapper(input, { stack: stack }) : null;
     var geometry = {
         type: 'Polygon',
         coordinates: [

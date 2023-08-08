@@ -21,7 +21,8 @@ interface QuadraticCurveToCommand extends svgPathParser.QuadraticCurveToCommand 
 }
 
 /** Reference:  https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths */
-const pathTransformer: SVGNodeTransformer = (input, svgMeta, options) => {
+const pathTransformer: SVGNodeTransformer = (stack, svgMeta, options) => {
+  const input = stack.pop();
   const polygons: number[][][][] = [];
   const lineStrings: number[][][] = [];
   const points: number[][] = [];
@@ -129,7 +130,7 @@ const pathTransformer: SVGNodeTransformer = (input, svgMeta, options) => {
   }
 
   const features: GeoJSON.Feature[] = [];
-  const properties = options.propertyMapper ? options.propertyMapper(input) : null;
+  const properties = options.propertyMapper ? options.propertyMapper(input, { stack }) : null;
   if (points.length) {
     points.forEach((point) => {
       const id = options.idMapper ? options.idMapper(input) : null;

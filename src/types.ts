@@ -14,7 +14,7 @@ export interface SVGMetaData {
 
 export interface FeaturePropertyMapper {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (input: INode): Record<string, any>;
+  (input: INode, args: { stack: INode[] }): Record<string, any>;
 }
 export interface FeatureIdMapper {
   (input: INode): number|string;
@@ -46,7 +46,7 @@ export interface SVGNodeTransformerOutput {
 
 export interface SVGNodeTransformer {
   (
-    node: INode,
+    stack: INode[],
     svgMeta: SVGMetaData,
     options: ConvertSVGOptions,
   ): SVGNodeTransformerOutput
