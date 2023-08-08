@@ -2,7 +2,8 @@ import { SVGNodeTransformer } from '../types';
 import { createFeature, parseSVGPointsString, svgPointToCoordinate } from '../utils';
 
 /** Reference: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/polyline */
-const polylineTransformer: SVGNodeTransformer = (input, svgMeta, options) => {
+const polylineTransformer: SVGNodeTransformer = (stack, svgMeta, options) => {
+  const input = stack.pop();
   const features: GeoJSON.Feature[] = [];
   const points = parseSVGPointsString(input.attributes.points)
     .map((p) => svgPointToCoordinate(p, svgMeta, options, input.attributes.transform));
@@ -20,7 +21,7 @@ const polylineTransformer: SVGNodeTransformer = (input, svgMeta, options) => {
   }
   if (geometry) {
     const id = options.idMapper ? options.idMapper(input) : null;
-    const properties = options.propertyMapper ? options.propertyMapper(input) : null;
+    const properties = options.propertyMapper ? options.propertyMapper(input, { stack }) : null;
     features.push(createFeature(geometry, id, properties));
   }
   return {

@@ -16,7 +16,7 @@ describe('transformer: rect', () => {
   it('should convert a SVG Rect to a GeoJSON Polygon', async () => {
     const parsedSVG = await svgson.parse(svgRect, { camelcase: true });
     const svgMeta = getSVGMetadata(parsedSVG);
-    const { features } = rect(parsedSVG.children[0], svgMeta, DEFAULT_CONVERT_OPTIONS);
+    const { features } = rect([parsedSVG.children[0]], svgMeta, DEFAULT_CONVERT_OPTIONS);
     expect(features.length).to.equal(1);
     const [rectFeature] = features;
     expect(GeoJSONValidation.isFeature(rectFeature, true)).to.be.empty;
@@ -33,7 +33,7 @@ describe('transformer: rect', () => {
   it('should convert a rounded SVG Rect to a GeoJSON Polygon', async () => {
     const parsedSVG = await svgson.parse(svgRect, { camelcase: true });
     const svgMeta = getSVGMetadata(parsedSVG);
-    const { features } = rect(parsedSVG.children[1], svgMeta, DEFAULT_CONVERT_OPTIONS);
+    const { features } = rect([parsedSVG.children[1]], svgMeta, DEFAULT_CONVERT_OPTIONS);
     expect(features.length).to.equal(1);
     const [rectFeature] = features;
     expect(GeoJSONValidation.isFeature(rectFeature, true)).to.be.empty;

@@ -16,7 +16,7 @@ describe('transformer: polygon', () => {
   it('should convert a SVG Polygon to a GeoJSON Polygon', async () => {
     const parsedSVG = await svgson.parse(svgPolygon, { camelcase: true });
     const svgMeta = getSVGMetadata(parsedSVG);
-    const { features } = polygon(parsedSVG.children[0], svgMeta, DEFAULT_CONVERT_OPTIONS);
+    const { features } = polygon([parsedSVG.children[0]], svgMeta, DEFAULT_CONVERT_OPTIONS);
     expect(features.length).to.equal(1);
     const [polygonFeature] = features;
     expect(GeoJSONValidation.isFeature(polygonFeature, true)).to.be.empty;

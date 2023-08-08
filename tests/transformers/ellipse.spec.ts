@@ -18,7 +18,7 @@ describe('transformer: ellipse', () => {
   it('should convert a SVG Circle to a GeoJSON Polygon', async () => {
     const parsedSVG = await svgson.parse(svgCircle, { camelcase: true });
     const svgMeta = getSVGMetadata(parsedSVG);
-    const { features } = ellipse(parsedSVG.children[0], svgMeta, DEFAULT_CONVERT_OPTIONS);
+    const { features } = ellipse([parsedSVG.children[0]], svgMeta, DEFAULT_CONVERT_OPTIONS);
     expect(features.length).to.equal(1);
     const [ellipseFeature] = features;
     expect(GeoJSONValidation.isFeature(ellipseFeature, true)).to.be.empty;
@@ -47,7 +47,7 @@ describe('transformer: ellipse', () => {
   it('should convert a SVG Ellipse to a GeoJSON Polygon', async () => {
     const parsedSVG = await svgson.parse(svgEllipse, { camelcase: true });
     const svgMeta = getSVGMetadata(parsedSVG);
-    const { features } = ellipse(parsedSVG.children[0], svgMeta, DEFAULT_CONVERT_OPTIONS);
+    const { features } = ellipse([parsedSVG.children[0]], svgMeta, DEFAULT_CONVERT_OPTIONS);
     expect(features.length).to.equal(1);
     const [ellipseFeature] = features;
     expect(GeoJSONValidation.isFeature(ellipseFeature, true)).to.be.empty;

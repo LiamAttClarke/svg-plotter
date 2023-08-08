@@ -3,7 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var utils_1 = require("../utils");
 var Vector2_1 = require("../Vector2");
 var mathUtils = require("../math-utils");
-var ellipseTransformer = function (input, svgMeta, options) {
+var ellipseTransformer = function (stack, svgMeta, options) {
+    var input = stack.pop();
     var center = new Vector2_1.default(parseFloat(input.attributes.cx), parseFloat(input.attributes.cy));
     var rx = 0;
     var ry = 0;
@@ -18,7 +19,7 @@ var ellipseTransformer = function (input, svgMeta, options) {
     var points = mathUtils.drawCurve(function (t) { return mathUtils.pointOnEllipse(center, rx, ry, t); }, options.subdivideThreshold).map(function (p) { return utils_1.svgPointToCoordinate(p, svgMeta, options, input.attributes.transform); });
     points[points.length - 1] = points[0];
     var id = options.idMapper ? options.idMapper(input) : null;
-    var properties = options.propertyMapper ? options.propertyMapper(input) : null;
+    var properties = options.propertyMapper ? options.propertyMapper(input, { stack: stack }) : null;
     var geometry = {
         type: 'Polygon',
         coordinates: [points],

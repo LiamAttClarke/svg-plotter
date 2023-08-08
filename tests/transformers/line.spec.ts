@@ -16,7 +16,7 @@ describe('transformer: line', () => {
   it('should convert a SVG Line to a GeoJSON LineString', async () => {
     const parsedSVG = await svgson.parse(svgLine, { camelcase: true });
     const svgMeta = getSVGMetadata(parsedSVG);
-    const { features } = line(parsedSVG.children[0], svgMeta, DEFAULT_CONVERT_OPTIONS);
+    const { features } = line([parsedSVG.children[0]], svgMeta, DEFAULT_CONVERT_OPTIONS);
     expect(features.length).to.equal(1);
     const [lineFeature] = features;
     expect(GeoJSONValidation.isFeature(lineFeature, true)).to.be.empty;

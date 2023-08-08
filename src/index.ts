@@ -26,18 +26,19 @@ const transformers: { [key: string]: SVGNodeTransformer } = {
 };
 
 function svgNodeToFeatures(
-  node: INode,
+  stack: INode[],
   svgMeta: SVGMetaData,
   options: ConvertSVGOptions,
 ): { features: GeoJSON.Feature[], errors: string[] } {
+  const node = stack[stack.length - 1];
   const outputFeatures: GeoJSON.Feature[] = [];
   const transformer = transformers[node.name];
   const errors: string[] = [];
   if (transformer) {
-    const { features, children } = transformer(node, svgMeta, options);
+    const { features, children } = transformer([...stack, node], svgMeta, options);
     outputFeatures.push(...features);
     children.forEach((n) => {
-      const childOutput = svgNodeToFeatures(n, svgMeta, options);
+      const childOutput = svgNodeToFeatures([...stack, n], svgMeta, options);
       outputFeatures.push(...childOutput.features);
       errors.push(...childOutput.errors);
     });
@@ -87,7 +88,7 @@ export function convertSVG(
   const parsedSVG = parseSVG(input, { camelcase: true });
   const svgMeta = getSVGMetadata(parsedSVG);
   // Convert SVG to GeoJSON
-  const { features, errors } = svgNodeToFeatures(parsedSVG, svgMeta, {
+  const { features, errors } = svgNodeToFeatures([parsedSVG], svgMeta, {
     ...DEFAULT_CONVERT_OPTIONS,
     ...options,
   });

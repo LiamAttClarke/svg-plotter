@@ -10,6 +10,13 @@ var __assign = (this && this.__assign) || function () {
     };
     return __assign.apply(this, arguments);
 };
+var __spreadArrays = (this && this.__spreadArrays) || function () {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.convertSVG = exports.getSVGMetadata = void 0;
 var svgson_1 = require("svgson");
@@ -31,15 +38,16 @@ var transformers = {
     polygon: Transformers.polygon,
     rect: Transformers.rect,
 };
-function svgNodeToFeatures(node, svgMeta, options) {
+function svgNodeToFeatures(stack, svgMeta, options) {
+    var node = stack[stack.length - 1];
     var outputFeatures = [];
     var transformer = transformers[node.name];
     var errors = [];
     if (transformer) {
-        var _a = transformer(node, svgMeta, options), features = _a.features, children = _a.children;
+        var _a = transformer(__spreadArrays(stack, [node]), svgMeta, options), features = _a.features, children = _a.children;
         outputFeatures.push.apply(outputFeatures, features);
         children.forEach(function (n) {
-            var childOutput = svgNodeToFeatures(n, svgMeta, options);
+            var childOutput = svgNodeToFeatures(__spreadArrays(stack, [n]), svgMeta, options);
             outputFeatures.push.apply(outputFeatures, childOutput.features);
             errors.push.apply(errors, childOutput.errors);
         });
@@ -82,7 +90,7 @@ function convertSVG(input, options) {
     if (options === void 0) { options = {}; }
     var parsedSVG = svgson_1.parseSync(input, { camelcase: true });
     var svgMeta = getSVGMetadata(parsedSVG);
-    var _a = svgNodeToFeatures(parsedSVG, svgMeta, __assign(__assign({}, DEFAULT_CONVERT_OPTIONS), options)), features = _a.features, errors = _a.errors;
+    var _a = svgNodeToFeatures([parsedSVG], svgMeta, __assign(__assign({}, DEFAULT_CONVERT_OPTIONS), options)), features = _a.features, errors = _a.errors;
     return {
         geojson: { type: 'FeatureCollection', features: features },
         errors: errors,

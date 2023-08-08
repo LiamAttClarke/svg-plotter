@@ -4,7 +4,8 @@ import { createFeature, svgPointToCoordinate } from '../utils';
 import Vector2 from '../Vector2';
 
 /** Reference: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/rect */
-const rectTransformer: SVGNodeTransformer = (input, svgMeta, options) => {
+const rectTransformer: SVGNodeTransformer = (stack, svgMeta, options) => {
+  const input = stack.pop();
   const x = parseFloat(input.attributes.x);
   const y = parseFloat(input.attributes.y);
   const width = parseFloat(input.attributes.width);
@@ -60,7 +61,7 @@ const rectTransformer: SVGNodeTransformer = (input, svgMeta, options) => {
     ring.push(ring[0]);
   }
   const id = options.idMapper ? options.idMapper(input) : null;
-  const properties = options.propertyMapper ? options.propertyMapper(input) : null;
+  const properties = options.propertyMapper ? options.propertyMapper(input, { stack }) : null;
   const geometry: GeoJSON.Polygon = {
     type: 'Polygon',
     coordinates: [

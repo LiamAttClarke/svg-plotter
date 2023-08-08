@@ -16,7 +16,7 @@ describe('transformer: polyline', () => {
   it('should convert a SVG Polyline to a GeoJSON LineString', async () => {
     const parsedSVG = await svgson.parse(svgPolyline, { camelcase: true });
     const svgMeta = getSVGMetadata(parsedSVG);
-    const { features } = polyline(parsedSVG.children[0], svgMeta, DEFAULT_CONVERT_OPTIONS);
+    const { features } = polyline([parsedSVG.children[0]], svgMeta, DEFAULT_CONVERT_OPTIONS);
     expect(features.length).to.equal(1);
     const [polylineFeature] = features;
     expect(GeoJSONValidation.isFeature(polylineFeature, true)).to.be.empty;

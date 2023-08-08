@@ -7,7 +7,8 @@ import * as mathUtils from '../math-utils';
  * Ellipse reference: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/ellipse
  * Circle reference: https://developer.mozilla.org/en-US/docs/Web/SVG/Element/circle
 */
-const ellipseTransformer: SVGNodeTransformer = (input, svgMeta, options) => {
+const ellipseTransformer: SVGNodeTransformer = (stack, svgMeta, options) => {
+  const input = stack.pop();
   const center = new Vector2(parseFloat(input.attributes.cx), parseFloat(input.attributes.cy));
   let rx = 0;
   let ry = 0;
@@ -26,7 +27,7 @@ const ellipseTransformer: SVGNodeTransformer = (input, svgMeta, options) => {
   // eslint-disable-next-line prefer-destructuring
   points[points.length - 1] = points[0];
   const id = options.idMapper ? options.idMapper(input) : null;
-  const properties = options.propertyMapper ? options.propertyMapper(input) : null;
+  const properties = options.propertyMapper ? options.propertyMapper(input, { stack }) : null;
   const geometry: GeoJSON.Polygon = {
     type: 'Polygon',
     coordinates: [points],

@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var svgTransformParser = require("ya-svg-transform");
-var groupTransformer = function (node) {
+var groupTransformer = function (stack) {
+    var node = stack.pop();
     var features = [];
     var children = node.children;
     var groupTransform = node.attributes.transform

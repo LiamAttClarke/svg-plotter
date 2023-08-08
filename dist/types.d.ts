@@ -10,7 +10,9 @@ export interface SVGMetaData {
     height: number;
 }
 export interface FeaturePropertyMapper {
-    (input: INode): Record<string, any>;
+    (input: INode, args: {
+        stack: INode[];
+    }): Record<string, any>;
 }
 export interface FeatureIdMapper {
     (input: INode): number | string;
@@ -28,5 +30,5 @@ export interface SVGNodeTransformerOutput {
     children: INode[];
 }
 export interface SVGNodeTransformer {
-    (node: INode, svgMeta: SVGMetaData, options: ConvertSVGOptions): SVGNodeTransformerOutput;
+    (stack: INode[], svgMeta: SVGMetaData, options: ConvertSVGOptions): SVGNodeTransformerOutput;
 }
