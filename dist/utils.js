@@ -40,17 +40,17 @@ function svgPointToCoordinate(point, svgMeta, options, svgTransform) {
     var aspect = svgMeta.width / svgMeta.height;
     var outputPoint = new Vector2_1.default((point1.x - svgMeta.x) / (svgMeta.width * aspect), (point1.y - svgMeta.y) / svgMeta.height);
     var scale = options.width / constants_1.EARTH_CIRCUMFERENCE;
-    var centerPoint = projections_1.mercator({ lon: options.center.longitude, lat: options.center.latitude });
+    var centerPoint = (0, projections_1.mercator)({ lon: options.center.longitude, lat: options.center.latitude });
     outputPoint = outputPoint
         .subtractScalar(0.5)
         .multiplyByScalar(scale);
     if (options.bearing) {
-        var rotation = math_utils_1.toRadians(options.bearing);
+        var rotation = (0, math_utils_1.toRadians)(options.bearing);
         outputPoint = new Vector2_1.default(outputPoint.x * Math.cos(rotation) - outputPoint.y * Math.sin(rotation), outputPoint.x * Math.sin(rotation) + outputPoint.y * Math.cos(rotation));
     }
     outputPoint = outputPoint.add(centerPoint);
-    outputPoint = new Vector2_1.default(math_utils_1.clamp(outputPoint.x, 0, 1), math_utils_1.clamp(outputPoint.y, 0, 1));
-    var projectedCoord = projections_1.mercator(outputPoint);
+    outputPoint = new Vector2_1.default((0, math_utils_1.clamp)(outputPoint.x, 0, 1), (0, math_utils_1.clamp)(outputPoint.y, 0, 1));
+    var projectedCoord = (0, projections_1.mercator)(outputPoint);
     return [projectedCoord.lon, projectedCoord.lat];
 }
 exports.svgPointToCoordinate = svgPointToCoordinate;

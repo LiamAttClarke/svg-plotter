@@ -22,12 +22,12 @@ var pathTransformer = function (input, svgMeta, options) {
                 lineStrings.push(currentLineString);
             }
             currentLineString = [
-                utils_1.svgPointToCoordinate(new Vector2_1.default(command.x, command.y), svgMeta, options, input.attributes.transform),
+                (0, utils_1.svgPointToCoordinate)(new Vector2_1.default(command.x, command.y), svgMeta, options, input.attributes.transform),
             ];
         }
         else if (['L', 'V', 'H'].indexOf(pathCommand.code) !== -1) {
             var command = pathCommand;
-            currentLineString.push(utils_1.svgPointToCoordinate(new Vector2_1.default(command.x, command.y), svgMeta, options, input.attributes.transform));
+            currentLineString.push((0, utils_1.svgPointToCoordinate)(new Vector2_1.default(command.x, command.y), svgMeta, options, input.attributes.transform));
         }
         else if (['C', 'S'].indexOf(pathCommand.code) !== -1) {
             var command = pathCommand;
@@ -41,7 +41,7 @@ var pathTransformer = function (input, svgMeta, options) {
             }
             var p2_1 = new Vector2_1.default(command.x2, command.y2);
             var p3_1 = new Vector2_1.default(command.x, command.y);
-            var curvePoints = mathUtils.drawCurve(function (t) { return mathUtils.pointOnCubicBezierCurve(p0_1, p1_1, p2_1, p3_1, t); }, options.subdivideThreshold).map(function (p) { return utils_1.svgPointToCoordinate(p, svgMeta, options, input.attributes.transform); });
+            var curvePoints = mathUtils.drawCurve(function (t) { return mathUtils.pointOnCubicBezierCurve(p0_1, p1_1, p2_1, p3_1, t); }, options.subdivideThreshold).map(function (p) { return (0, utils_1.svgPointToCoordinate)(p, svgMeta, options, input.attributes.transform); });
             currentLineString = currentLineString.concat(curvePoints);
             previousCurveHandle = p2_1;
         }
@@ -56,7 +56,7 @@ var pathTransformer = function (input, svgMeta, options) {
                 p1_2 = ['Q', 'T'].indexOf(previousCommand.code) !== -1 ? p0_2.add(p0_2.subtract(previousCurveHandle)) : p0_2;
             }
             var p2_2 = new Vector2_1.default(command.x, command.y);
-            var curvePoints = mathUtils.drawCurve(function (t) { return mathUtils.pointOnQuadraticBezierCurve(p0_2, p1_2, p2_2, t); }, options.subdivideThreshold).map(function (p) { return utils_1.svgPointToCoordinate(p, svgMeta, options, input.attributes.transform); });
+            var curvePoints = mathUtils.drawCurve(function (t) { return mathUtils.pointOnQuadraticBezierCurve(p0_2, p1_2, p2_2, t); }, options.subdivideThreshold).map(function (p) { return (0, utils_1.svgPointToCoordinate)(p, svgMeta, options, input.attributes.transform); });
             currentLineString = currentLineString.concat(curvePoints);
             previousCurveHandle = p1_2;
         }
@@ -69,7 +69,7 @@ var pathTransformer = function (input, svgMeta, options) {
             var xAxisRotation_1 = -command.xAxisRotation;
             var largeArc_1 = command.largeArc;
             var sweep_1 = !command.sweep;
-            var curvePoints = mathUtils.drawCurve(function (t) { return mathUtils.pointOnEllipticalArc(p0_3, p1_3, rx_1, ry_1, xAxisRotation_1, largeArc_1, sweep_1, t); }, options.subdivideThreshold).map(function (p) { return utils_1.svgPointToCoordinate(p, svgMeta, options, input.attributes.transform); });
+            var curvePoints = mathUtils.drawCurve(function (t) { return mathUtils.pointOnEllipticalArc(p0_3, p1_3, rx_1, ry_1, xAxisRotation_1, largeArc_1, sweep_1, t); }, options.subdivideThreshold).map(function (p) { return (0, utils_1.svgPointToCoordinate)(p, svgMeta, options, input.attributes.transform); });
             currentLineString = currentLineString.concat(curvePoints);
         }
         else if (pathCommand.code === 'Z') {
@@ -93,7 +93,7 @@ var pathTransformer = function (input, svgMeta, options) {
                 type: 'Point',
                 coordinates: point,
             };
-            features.push(utils_1.createFeature(geometry, id, properties));
+            features.push((0, utils_1.createFeature)(geometry, id, properties));
         });
     }
     if (lineStrings.length) {
@@ -103,7 +103,7 @@ var pathTransformer = function (input, svgMeta, options) {
                 type: 'LineString',
                 coordinates: lineString,
             };
-            features.push(utils_1.createFeature(geometry, id, properties));
+            features.push((0, utils_1.createFeature)(geometry, id, properties));
         });
     }
     if (polygons.length) {
@@ -113,7 +113,7 @@ var pathTransformer = function (input, svgMeta, options) {
                 type: 'Polygon',
                 coordinates: [polygon],
             };
-            return utils_1.createFeature(geometry, id, properties);
+            return (0, utils_1.createFeature)(geometry, id, properties);
         });
         features.push(polygonFeatures[0]);
     }

@@ -21,7 +21,10 @@ describe('transformer: line', () => {
     const [lineFeature] = features;
     expect(GeoJSONValidation.isFeature(lineFeature, true)).to.be.empty;
     expect(GeoJSONValidation.isLineString(lineFeature.geometry, true)).to.be.empty;
-    expect((lineFeature.geometry as GeoJsonObject).coordinates).to.deep.equal([[-90, 66.51326044311186], [90, -66.51326044311186]]);
+    expect(lineFeature.geometry.type).to.equal("LineString");
+    if (lineFeature.geometry.type == "LineString") {
+      expect(lineFeature.geometry.coordinates).to.deep.equal([[-90, 66.51326044311186], [90, -66.51326044311186]]);
+    }
   });
 
 });

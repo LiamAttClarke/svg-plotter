@@ -7,7 +7,7 @@ import { EARTH_CIRCUMFERENCE } from './constants';
 
 export function createFeature(
   geometry: GeoJSON.Geometry,
-  id: string|number|null,
+  id: string | number | null,
   properties: GeoJSON.GeoJsonProperties,
 ): GeoJSON.Feature {
   const feature: GeoJSON.Feature = {

@@ -17,7 +17,7 @@ export interface FeaturePropertyMapper {
   (input: INode): Record<string, any>;
 }
 export interface FeatureIdMapper {
-  (input: INode): number|string;
+  (input: INode): number | string;
 }
 
 export interface ConvertSVGOptions {

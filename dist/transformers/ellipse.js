@@ -15,7 +15,7 @@ var ellipseTransformer = function (input, svgMeta, options) {
         rx = parseFloat(input.attributes.rx);
         ry = parseFloat(input.attributes.ry);
     }
-    var points = mathUtils.drawCurve(function (t) { return mathUtils.pointOnEllipse(center, rx, ry, t); }, options.subdivideThreshold).map(function (p) { return utils_1.svgPointToCoordinate(p, svgMeta, options, input.attributes.transform); });
+    var points = mathUtils.drawCurve(function (t) { return mathUtils.pointOnEllipse(center, rx, ry, t); }, options.subdivideThreshold).map(function (p) { return (0, utils_1.svgPointToCoordinate)(p, svgMeta, options, input.attributes.transform); });
     points[points.length - 1] = points[0];
     var id = options.idMapper ? options.idMapper(input) : null;
     var properties = options.propertyMapper ? options.propertyMapper(input) : null;
@@ -24,7 +24,7 @@ var ellipseTransformer = function (input, svgMeta, options) {
         coordinates: [points],
     };
     return {
-        features: [utils_1.createFeature(geometry, id, properties)],
+        features: [(0, utils_1.createFeature)(geometry, id, properties)],
         children: [],
     };
 };
