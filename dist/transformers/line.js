@@ -8,12 +8,12 @@ var lineTransformer = function (input, svgMeta, options) {
     var geometry = {
         type: 'LineString',
         coordinates: [
-            utils_1.svgPointToCoordinate(new Vector2_1.default(parseFloat(input.attributes.x1), parseFloat(input.attributes.y1)), svgMeta, options, input.attributes.transform),
-            utils_1.svgPointToCoordinate(new Vector2_1.default(parseFloat(input.attributes.x2), parseFloat(input.attributes.y2)), svgMeta, options, input.attributes.transform),
+            (0, utils_1.svgPointToCoordinate)(new Vector2_1.default(parseFloat(input.attributes.x1), parseFloat(input.attributes.y1)), svgMeta, options, input.attributes.transform),
+            (0, utils_1.svgPointToCoordinate)(new Vector2_1.default(parseFloat(input.attributes.x2), parseFloat(input.attributes.y2)), svgMeta, options, input.attributes.transform),
         ],
     };
     return {
-        features: [utils_1.createFeature(geometry, id, properties)],
+        features: [(0, utils_1.createFeature)(geometry, id, properties)],
         children: [],
     };
 };

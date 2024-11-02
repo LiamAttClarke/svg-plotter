@@ -21,17 +21,20 @@ describe('transformer: polyline', () => {
     const [polylineFeature] = features;
     expect(GeoJSONValidation.isFeature(polylineFeature, true)).to.be.empty;
     expect(GeoJSONValidation.isLineString(polylineFeature.geometry, true)).to.be.empty;
-    expect(polylineFeature.geometry.coordinates).to.deep.equal([
-      [-110.88, -17.711014416582245],
-      [-105.12000000000002, -33.841220320476765],
-      [-99.36000000000001, -26.05283495188394],
-      [-93.60000000000001, -47.422140992876095],
-      [-87.84, -40.97989806962015],
-      [-82.08, -58.22628219768537],
-      [-76.32000000000001, -53.16258159476075],
-      [-70.56, -66.51326044311186],
-      [-64.80000000000001, -62.658000452319406],
-    ]);
+    expect(polylineFeature.geometry.type).to.equal("LineString");
+    if (polylineFeature.geometry.type == "LineString") {
+      expect(polylineFeature.geometry.coordinates).to.deep.equal([
+        [-110.88, -17.711014416582245],
+        [-105.12000000000002, -33.841220320476765],
+        [-99.36000000000001, -26.05283495188394],
+        [-93.60000000000001, -47.422140992876095],
+        [-87.84, -40.97989806962015],
+        [-82.08, -58.22628219768537],
+        [-76.32000000000001, -53.16258159476075],
+        [-70.56, -66.51326044311186],
+        [-64.80000000000001, -62.658000452319406],
+      ]);
+    }
   });
 
 });

@@ -45,7 +45,7 @@ function svgNodeToFeatures(node, svgMeta, options) {
         });
     }
     else {
-        errors.push("Skipping unsupported node: " + node.name);
+        errors.push("Skipping unsupported node: ".concat(node.name));
     }
     return {
         features: outputFeatures,
@@ -80,7 +80,7 @@ function getSVGMetadata(parsedSVG) {
 exports.getSVGMetadata = getSVGMetadata;
 function convertSVG(input, options) {
     if (options === void 0) { options = {}; }
-    var parsedSVG = svgson_1.parseSync(input, { camelcase: true });
+    var parsedSVG = (0, svgson_1.parseSync)(input, { camelcase: true });
     var svgMeta = getSVGMetadata(parsedSVG);
     var _a = svgNodeToFeatures(parsedSVG, svgMeta, __assign(__assign({}, DEFAULT_CONVERT_OPTIONS), options)), features = _a.features, errors = _a.errors;
     return {

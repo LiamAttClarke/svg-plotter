@@ -1,10 +1,12 @@
 "use strict";
-var __spreadArrays = (this && this.__spreadArrays) || function () {
-    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
-    for (var r = Array(s), k = 0, i = 0; i < il; i++)
-        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
-            r[k] = a[j];
-    return r;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var mathUtils = require("../math-utils");
@@ -25,7 +27,7 @@ var rectTransformer = function (input, svgMeta, options) {
         var bottomLeftCorner = mathUtils.drawCurve(function (t) { return mathUtils.pointOnEllipse(new Vector2_1.default(x + rx, y + height - ry), rx, ry, t); }, options.subdivideThreshold, 0.25, 0.5);
         var isMaxRadiusX = rx * 2 >= width;
         var isMaxRadiusY = ry * 2 >= height;
-        ring.push.apply(ring, __spreadArrays(topLeftCorner, (isMaxRadiusX ? topRightCorner : topRightCorner.slice(1)), (isMaxRadiusY ? bottomRightCorner : bottomRightCorner.slice(1)), (isMaxRadiusX ? bottomLeftCorner : bottomLeftCorner.slice(1))));
+        ring.push.apply(ring, __spreadArray(__spreadArray(__spreadArray(__spreadArray([], topLeftCorner, false), (isMaxRadiusX ? topRightCorner : topRightCorner.slice(1)), false), (isMaxRadiusY ? bottomRightCorner : bottomRightCorner.slice(1)), false), (isMaxRadiusX ? bottomLeftCorner : bottomLeftCorner.slice(1)), false));
         if (!isMaxRadiusY) {
             ring.push(ring[0]);
         }
@@ -39,11 +41,11 @@ var rectTransformer = function (input, svgMeta, options) {
     var geometry = {
         type: 'Polygon',
         coordinates: [
-            ring.map(function (p) { return utils_1.svgPointToCoordinate(p, svgMeta, options, input.attributes.transform); }),
+            ring.map(function (p) { return (0, utils_1.svgPointToCoordinate)(p, svgMeta, options, input.attributes.transform); }),
         ],
     };
     return {
-        features: [utils_1.createFeature(geometry, id, properties)],
+        features: [(0, utils_1.createFeature)(geometry, id, properties)],
         children: [],
     };
 };

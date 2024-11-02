@@ -21,13 +21,16 @@ describe('transformer: rect', () => {
     const [rectFeature] = features;
     expect(GeoJSONValidation.isFeature(rectFeature, true)).to.be.empty;
     expect(GeoJSONValidation.isPolygon(rectFeature.geometry, true)).to.be.empty;
-    expect(rectFeature.geometry.coordinates).to.deep.equal([[
-      [-90, 66.51326044311186],
-      [90, 66.51326044311186],
-      [90, -66.51326044311186],
-      [-90, -66.51326044311186],
-      [-90, 66.51326044311186]
-    ]]);
+    expect(rectFeature.geometry.type).to.equal("Polygon");
+    if (rectFeature.geometry.type == "Polygon") {
+      expect(rectFeature.geometry.coordinates).to.deep.equal([[
+        [-90, 66.51326044311186],
+        [90, 66.51326044311186],
+        [90, -66.51326044311186],
+        [-90, -66.51326044311186],
+        [-90, 66.51326044311186]
+      ]]);
+    }
   });
 
   it('should convert a rounded SVG Rect to a GeoJSON Polygon', async () => {
@@ -38,24 +41,27 @@ describe('transformer: rect', () => {
     const [rectFeature] = features;
     expect(GeoJSONValidation.isFeature(rectFeature, true)).to.be.empty;
     expect(GeoJSONValidation.isPolygon(rectFeature.geometry, true)).to.be.empty;
-    expect(rectFeature.geometry.coordinates).to.deep.equal([[
-      [-90, 40.979898069620134],
-      [-83.40990257669732, 60.67484327381422],
-      [-76.11037722821453, 65.1101218491444],
-      [-67.5, 66.51326044311186],
-      [71.88953224536287, 66.1662669326175],
-      [76.11037722821452, 65.1101218491444],
-      [83.40990257669732, 60.67484327381422],
-      [90, 40.97989806962015],
-      [83.40990257669732, -60.67484327381424],
-      [76.11037722821452, -65.1101218491444],
-      [67.5, -66.51326044311186],
-      [-71.88953224536287, -66.1662669326175],
-      [-76.11037722821452, -65.1101218491444],
-      [-83.40990257669732, -60.67484327381424],
-      [-90, -40.97989806962015],
-      [-90, 40.979898069620134]
-    ]]);
+    expect(rectFeature.geometry.type).to.equal("Polygon");
+    if (rectFeature.geometry.type == "Polygon") {
+      expect(rectFeature.geometry.coordinates).to.deep.equal([[
+        [-90, 40.979898069620134],
+        [-83.40990257669732, 60.67484327381422],
+        [-76.11037722821453, 65.1101218491444],
+        [-67.5, 66.51326044311186],
+        [71.88953224536287, 66.1662669326175],
+        [76.11037722821452, 65.1101218491444],
+        [83.40990257669732, 60.67484327381422],
+        [90, 40.97989806962015],
+        [83.40990257669732, -60.67484327381424],
+        [76.11037722821452, -65.1101218491444],
+        [67.5, -66.51326044311186],
+        [-71.88953224536287, -66.1662669326175],
+        [-76.11037722821452, -65.1101218491444],
+        [-83.40990257669732, -60.67484327381424],
+        [-90, -40.97989806962015],
+        [-90, 40.979898069620134]
+      ]]);
+    }
   });
 
 });

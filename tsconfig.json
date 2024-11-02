@@ -7,9 +7,9 @@
     "declaration": true,
     "noImplicitAny": true,
     "removeComments": true,
+    "resolveJsonModule": true,
     "sourceMap": true,
     "typeRoots": [
-      "types",
       "node_modules/@types"
     ]
   },
