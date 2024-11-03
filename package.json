@@ -1,65 +1,65 @@
 {
-  "name": "svg-plotter",
-  "version": "1.0.0",
-  "description": "Convert SVG files to GeoJSON",
-  "main": "dist/index.js",
-  "bin": {
-    "svg-plotter": "./bin/svg-plotter.js"
-  },
-  "scripts": {
-    "postinstall": "husky install",
-    "precommit": "cross-env NODE_ENV=production npm run lint && npm test && npm run build && git add dist/* docs/* demo/*",
-    "prepublishOnly": "pinst --disable",
-    "postpublish": "pinst --enable",
-    "build": "tsc && npm run build:docs && npm run build:demo",
-    "build:docs": "typedoc ./src/index.ts",
-    "build:demo": "browserify ./demo/main.js -o ./demo/main-bundle.js",
-    "test": "mocha",
-    "lint": "eslint --fix ./src/**/*.{js,ts}"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/LiamAttClarke/svg-plotter.git"
-  },
-  "author": "Liam Atticus Clarke",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/LiamAttClarke/svg-plotter/issues"
-  },
-  "homepage": "https://github.com/LiamAttClarke/svg-plotter#readme",
-  "dependencies": {
-    "@turf/bbox": "^6.3.0",
-    "commander": "^7.0.0",
-    "file-saver": "^2.0.5",
-    "mapbox-gl": "^2.1.1",
-    "projections": "^1.0.0",
-    "svg-path-parser": "^1.1.0",
-    "svgson": "^4.1.0",
-    "ya-svg-transform": "0.0.3"
-  },
-  "devDependencies": {
-    "@types/chai": "^4.2.15",
-    "@types/chai-roughly": "^1.0.1",
-    "@types/geojson": "^7946.0.7",
-    "@types/geojson-validation": "^1.0.3",
-    "@types/mocha": "^8.2.0",
-    "@types/node": "^14.14.27",
-    "@types/projections": "^1.0.3",
-    "@types/svg-path-parser": "^1.1.1",
-    "@typescript-eslint/eslint-plugin": "^4.15.0",
-    "browserify": "^17.0.0",
-    "chai": "^4.3.0",
-    "chai-roughly": "^1.0.0",
-    "cross-env": "^7.0.3",
-    "eslint": "^7.20.0",
-    "eslint-config-airbnb-typescript": "^12.3.1",
-    "eslint-plugin-import": "^2.22.1",
-    "geojson-validation": "^1.0.2",
-    "husky": "^5.0.9",
-    "mocha": "^10.8.2",
-    "pinst": "^2.1.4",
-    "ts-node": "^10.9.2",
-    "typedoc": "^0.26.11",
-    "typescript": "^4.1.5"
-  }
+    "name": "svg-plotter",
+    "version": "1.0.0",
+    "description": "Convert SVG files to GeoJSON",
+    "main": "dist/index.js",
+    "bin": {
+        "svg-plotter": "./bin/svg-plotter.js"
+    },
+    "scripts": {
+        "postinstall": "husky install",
+        "precommit": "cross-env NODE_ENV=production npm run lint && npm test && npm run build && git add dist/* docs/* demo/*",
+        "prepublishOnly": "pinst --disable",
+        "postpublish": "pinst --enable",
+        "build": "tsc -p tsconfig.build.json && npm run build:docs && npm run build:demo",
+        "build:docs": "typedoc ./src/index.ts",
+        "build:demo": "browserify ./demo/main.js -o ./demo/main-bundle.js",
+        "test": "mocha",
+        "lint": "eslint --fix ."
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/LiamAttClarke/svg-plotter.git"
+    },
+    "author": "Liam Atticus Clarke",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/LiamAttClarke/svg-plotter/issues"
+    },
+    "homepage": "https://github.com/LiamAttClarke/svg-plotter#readme",
+    "dependencies": {
+        "@turf/bbox": "^6.3.0",
+        "commander": "^7.0.0",
+        "file-saver": "^2.0.5",
+        "mapbox-gl": "^2.1.1",
+        "projections": "^1.0.0",
+        "svg-path-parser": "^1.1.0",
+        "svgson": "^4.1.0",
+        "ya-svg-transform": "0.0.3"
+    },
+    "devDependencies": {
+        "@types/chai": "^4.2.15",
+        "@types/chai-roughly": "^1.0.1",
+        "@types/geojson": "^7946.0.7",
+        "@types/geojson-validation": "^1.0.3",
+        "@types/mocha": "^8.2.0",
+        "@types/node": "^14.14.27",
+        "@types/projections": "^1.0.3",
+        "@types/svg-path-parser": "^1.1.1",
+        "@typescript-eslint/eslint-plugin": "^4.15.0",
+        "browserify": "^17.0.0",
+        "chai": "^4.3.0",
+        "chai-roughly": "^1.0.0",
+        "cross-env": "^7.0.3",
+        "eslint": "^7.20.0",
+        "eslint-config-google": "^0.14.0",
+        "eslint-plugin-import": "^2.22.1",
+        "geojson-validation": "^1.0.2",
+        "husky": "^5.0.9",
+        "mocha": "^10.8.2",
+        "pinst": "^2.1.4",
+        "ts-node": "^10.9.2",
+        "typedoc": "^0.26.11",
+        "typescript": "^4.1.5"
+    }
 }

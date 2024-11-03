@@ -8,7 +8,7 @@ var math_utils_1 = require("./math-utils");
 var constants_1 = require("./constants");
 function createFeature(geometry, id, properties) {
     var feature = {
-        type: 'Feature',
+        type: "Feature",
         geometry: geometry,
         properties: properties,
     };

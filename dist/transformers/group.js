@@ -16,7 +16,9 @@ var groupTransformer = function (node) {
                     var childTransform = svgTransformParser
                         .transform(child.attributes.transform)
                         .asMatrix();
-                    outputChild.attributes.transform = groupTransform.dot(childTransform).render();
+                    outputChild.attributes.transform = groupTransform
+                        .dot(childTransform)
+                        .render();
                 }
                 else {
                     outputChild.attributes.transform = node.attributes.transform;

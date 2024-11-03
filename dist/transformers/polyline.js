@@ -8,19 +8,21 @@ var polylineTransformer = function (input, svgMeta, options) {
     var geometry = null;
     if (points.length > 1) {
         geometry = {
-            type: 'LineString',
+            type: "LineString",
             coordinates: points,
         };
     }
     else if (points.length === 1) {
         geometry = {
-            type: 'Point',
+            type: "Point",
             coordinates: points[0],
         };
     }
     if (geometry) {
         var id = options.idMapper ? options.idMapper(input) : null;
-        var properties = options.propertyMapper ? options.propertyMapper(input) : null;
+        var properties = options.propertyMapper
+            ? options.propertyMapper(input)
+            : null;
         features.push((0, utils_1.createFeature)(geometry, id, properties));
     }
     return {

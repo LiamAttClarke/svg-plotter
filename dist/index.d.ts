@@ -1,5 +1,5 @@
-import { INode } from 'svgson';
-import { ConvertSVGOptions, SVGMetaData } from './types';
+import { INode } from "svgson";
+import { ConvertSVGOptions, SVGMetaData } from "./types";
 export declare function getSVGMetadata(parsedSVG: INode): SVGMetaData;
 export interface ConvertSVGOutput {
     geojson: GeoJSON.FeatureCollection;

@@ -1,5 +1,5 @@
-import { Coordinate } from './types';
-import Vector2 from './Vector2';
+import { Coordinate } from "./types";
+import Vector2 from "./Vector2";
 interface ICurve {
     (t: number): Vector2;
 }

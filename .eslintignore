@@ -1,0 +1,4 @@
+demo/main-bundle.js
+dist/*
+docs/*
+.eslintrc.js

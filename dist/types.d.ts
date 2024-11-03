@@ -1,4 +1,4 @@
-import { INode } from 'svgson';
+import { INode } from "svgson";
 export interface Coordinate {
     latitude: number;
     longitude: number;

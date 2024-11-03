@@ -1,109 +1,114 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
-const mapbox = require('mapbox-gl');
-const bbox = require('@turf/bbox').default;
-const FileSaver = require('file-saver');
-const { convertSVG } = require('../dist');
+const mapbox = require("mapbox-gl");
+const bbox = require("@turf/bbox").default;
+const FileSaver = require("file-saver");
+const { convertSVG } = require("../dist");
 
-const svgPreviewImage = document.getElementById('svgPreviewImage');
-const convertForm = document.getElementById('convertForm');
-const svgFileInput = document.getElementById('svgFileInput');
-const convertButton = document.getElementById('convertButton');
-const downloadButton = document.getElementById('downloadButton');
+const svgPreviewImage = document.getElementById("svgPreviewImage");
+const convertForm = document.getElementById("convertForm");
+const svgFileInput = document.getElementById("svgFileInput");
+const convertButton = document.getElementById("convertButton");
+const downloadButton = document.getElementById("downloadButton");
 
 let svgInput = null;
 let geojsonOutput = null;
 
 // Setup map preview
-mapbox.accessToken = 'pk.eyJ1IjoibGlhbWF0dGNsYXJrZSIsImEiOiJjaXEzN2VidjUwMGFybmptNHVtNHB3cGptIn0.ZSHWqW1AMlyE3A6FlqA0ww';
+// eslint-disable-next-line max-len
+mapbox.accessToken = "pk.eyJ1IjoibGlhbWF0dGNsYXJrZSIsImEiOiJjaXEzN2VidjUwMGFybmptNHVtNHB3cGptIn0.ZSHWqW1AMlyE3A6FlqA0ww";
 const map = new mapbox.Map({
-  container: 'previewMap',
-  style: 'mapbox://styles/liamattclarke/cjtzbrujx4jya1fqwtdtj9ety',
-  center: [-79.411079, 43.761539],
-  zoom: 9
+    container: "previewMap",
+    style: "mapbox://styles/liamattclarke/cjtzbrujx4jya1fqwtdtj9ety",
+    center: [-79.411079, 43.761539],
+    zoom: 9,
 });
-map.on('load', () => {
-  map.addSource('svg', {
-    "type": "geojson",
-    "data": {
-      "type": "FeatureCollection",
-      "features": []
+map.on("load", () => {
+    map.addSource("svg", {
+        "type": "geojson",
+        "data": {
+            "type": "FeatureCollection",
+            "features": [],
+        },
+    });
+    map.addLayer({
+        "id": "svg-point",
+        "source": "svg",
+        "type": "symbol",
+        "filter": ["==", "$type", "Point"],
+    });
+    map.addLayer({
+        "id": "svg-line",
+        "source": "svg",
+        "type": "line",
+        "paint": {
+            "line-color": "#55acee",
+            "line-width": 2,
+        },
+        "filter": ["in", "$type", "LineString", "Polygon"],
+    });
+    map.addLayer({
+        "id": "svg-fill",
+        "source": "svg",
+        "type": "fill",
+        "paint": {
+            "fill-color": "#55acee",
+            "fill-opacity": 0.25,
+        },
+        "filter": ["==", "$type", "Polygon"],
+    });
+});
+
+svgFileInput.addEventListener("change", (event) => {
+    if (event.target.files.length) {
+        const fileReader = new FileReader();
+        fileReader.onload = (event) => {
+            svgInput = event.target.result;
+            const uri = btoa(unescape(encodeURIComponent(event.target.result)));
+            svgPreviewImage.src = `data:image/svg+xml;base64,${uri}`;
+        };
+        fileReader.readAsText(event.target.files[0]);
     }
-  });
-  map.addLayer({
-    "id": "svg-point",
-    "source": "svg",
-    "type": "symbol",
-    "filter": ["==", "$type", "Point"]
-  });
-  map.addLayer({
-    "id": "svg-line",
-    "source": "svg",
-    "type": "line",
-    "paint": {
-      "line-color": "#55acee",
-      "line-width": 2
-    },
-    "filter": ["in", "$type", "LineString", "Polygon"]
-  });
-  map.addLayer({
-    "id": "svg-fill",
-    "source": "svg",
-    "type": "fill",
-    "paint": {
-      "fill-color": "#55acee",
-      "fill-opacity": 0.25
-    },
-    "filter": ["==", "$type", "Polygon"]
-  });
 });
 
-svgFileInput.addEventListener('change', (event) => {
-  if (event.target.files.length) {
-    const fileReader = new FileReader();
-    fileReader.onload = function(event) {
-      svgInput = event.target.result;
-      svgPreviewImage.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(event.target.result)));
-    };
-    fileReader.readAsText(event.target.files[0]);
-  }
-});
-
-convertButton.addEventListener('click', (event) => {
-  event.preventDefault();
-  const formData = new FormData(convertForm);
-  try {
-    const { geojson, errors } = convertSVG(svgInput, {
-      center: {
-        latitude: parseFloat(formData.get('centerLatitude')),
-        longitude: parseFloat(formData.get('centerLongitude'))
-      },
-      width: parseFloat(formData.get('width')),
-      bearing: parseFloat(formData.get('bearing')),
-      subdivideThreshold: parseFloat(formData.get('subdivideThreshold'))
-    });
-    geojsonOutput = geojson;
-    errors.forEach((e) => console.warn(e));
-    downloadButton.removeAttribute('disabled');
-    map.getSource('svg').setData(geojsonOutput);
-    map.fitBounds(bbox(geojsonOutput), {
-      padding: 100,
-      // Offsetting to righ to accomodate floating control panel
-      offset: [100, 0]
-    });
-  } catch(e) {
-    alert('Failed to convert SVG. See logs for more detail.');
-    console.error(e);
-  }
-});
-
-downloadButton.addEventListener('click', (event) => {
-  event.preventDefault();
-  if (geojsonOutput) {
+convertButton.addEventListener("click", (event) => {
+    event.preventDefault();
     const formData = new FormData(convertForm);
-    const blob = new Blob([JSON.stringify(geojsonOutput, null, 2)], { type: 'application/json' });
-    const fileName = formData.get('svgFile').name.replace('.svg', '.geojson');
-    FileSaver.saveAs(blob, fileName);
-  }
+    try {
+        const { geojson, errors } = convertSVG(svgInput, {
+            center: {
+                latitude: parseFloat(formData.get("centerLatitude")),
+                longitude: parseFloat(formData.get("centerLongitude")),
+            },
+            width: parseFloat(formData.get("width")),
+            bearing: parseFloat(formData.get("bearing")),
+            subdivideThreshold: parseFloat(formData.get("subdivideThreshold")),
+        });
+        geojsonOutput = geojson;
+        errors.forEach((e) => console.warn(e));
+        downloadButton.removeAttribute("disabled");
+        map.getSource("svg").setData(geojsonOutput);
+        map.fitBounds(bbox(geojsonOutput), {
+            padding: 100,
+            // Offsetting to righ to accomodate floating control panel
+            offset: [100, 0],
+        });
+    } catch (e) {
+        alert("Failed to convert SVG. See logs for more detail.");
+        console.error(e);
+    }
+});
+
+downloadButton.addEventListener("click", (event) => {
+    event.preventDefault();
+    if (geojsonOutput) {
+        const formData = new FormData(convertForm);
+        const blob = new Blob(
+            [JSON.stringify(geojsonOutput, null, 2)],
+            { type: "application/json" },
+        );
+        const fileName = formData.get("svgFile").name.replace(".svg", ".geojson");
+        FileSaver.saveAs(blob, fileName);
+    }
 });
 
 },{"../dist":4,"@turf/bbox":15,"file-saver":18,"mapbox-gl":19}],2:[function(require,module,exports){
@@ -238,7 +243,7 @@ function getSVGMetadata(parsedSVG) {
         height: 0,
     };
     if (parsedSVG.attributes.viewBox) {
-        var coords = parsedSVG.attributes.viewBox.split(' ');
+        var coords = parsedSVG.attributes.viewBox.split(" ");
         svgMeta.x = parseFloat(coords[0]);
         svgMeta.y = parseFloat(coords[1]);
         svgMeta.width = parseFloat(coords[2]) - svgMeta.x;
@@ -251,7 +256,7 @@ function getSVGMetadata(parsedSVG) {
         svgMeta.height = parseFloat(parsedSVG.attributes.height) - svgMeta.y;
     }
     else {
-        throw new Error('SVG must have a viewBox or width/height attributes.');
+        throw new Error("SVG must have a viewBox or width/height attributes.");
     }
     return svgMeta;
 }
@@ -262,7 +267,7 @@ function convertSVG(input, options) {
     var svgMeta = getSVGMetadata(parsedSVG);
     var _a = svgNodeToFeatures(parsedSVG, svgMeta, __assign(__assign({}, DEFAULT_CONVERT_OPTIONS), options)), features = _a.features, errors = _a.errors;
     return {
-        geojson: { type: 'FeatureCollection', features: features },
+        geojson: { type: "FeatureCollection", features: features },
         errors: errors,
     };
 }
@@ -440,9 +445,11 @@ var ellipseTransformer = function (input, svgMeta, options) {
     var points = mathUtils.drawCurve(function (t) { return mathUtils.pointOnEllipse(center, rx, ry, t); }, options.subdivideThreshold).map(function (p) { return (0, utils_1.svgPointToCoordinate)(p, svgMeta, options, input.attributes.transform); });
     points[points.length - 1] = points[0];
     var id = options.idMapper ? options.idMapper(input) : null;
-    var properties = options.propertyMapper ? options.propertyMapper(input) : null;
+    var properties = options.propertyMapper
+        ? options.propertyMapper(input)
+        : null;
     var geometry = {
-        type: 'Polygon',
+        type: "Polygon",
         coordinates: [points],
     };
     return {
@@ -471,7 +478,9 @@ var groupTransformer = function (node) {
                     var childTransform = svgTransformParser
                         .transform(child.attributes.transform)
                         .asMatrix();
-                    outputChild.attributes.transform = groupTransform.dot(childTransform).render();
+                    outputChild.attributes.transform = groupTransform
+                        .dot(childTransform)
+                        .render();
                 }
                 else {
                     outputChild.attributes.transform = node.attributes.transform;
@@ -510,9 +519,11 @@ var utils_1 = require("../utils");
 var Vector2_1 = require("../Vector2");
 var lineTransformer = function (input, svgMeta, options) {
     var id = options.idMapper ? options.idMapper(input) : null;
-    var properties = options.propertyMapper ? options.propertyMapper(input) : null;
+    var properties = options.propertyMapper
+        ? options.propertyMapper(input)
+        : null;
     var geometry = {
-        type: 'LineString',
+        type: "LineString",
         coordinates: [
             (0, utils_1.svgPointToCoordinate)(new Vector2_1.default(parseFloat(input.attributes.x1), parseFloat(input.attributes.y1)), svgMeta, options, input.attributes.transform),
             (0, utils_1.svgPointToCoordinate)(new Vector2_1.default(parseFloat(input.attributes.x2), parseFloat(input.attributes.y2)), svgMeta, options, input.attributes.transform),
@@ -540,10 +551,11 @@ function parseSVGPath(pathD, transform, svgMeta, options) {
     };
     var currentLineString = [];
     var previousCurveHandle = null;
-    var pathCommands = svgPathParser.makeAbsolute(svgPathParser.parseSVG(pathD));
+    var pathCommands = svgPathParser
+        .makeAbsolute(svgPathParser.parseSVG(pathD));
     pathCommands.forEach(function (pathCommand, i) {
         var previousCommand = (i > 0) ? pathCommands[i - 1] : null;
-        if (pathCommand.code === 'M') {
+        if (pathCommand.code === "M") {
             var command = pathCommand;
             if (currentLineString.length === 1) {
                 output.points.push(currentLineString[0]);
@@ -555,19 +567,21 @@ function parseSVGPath(pathD, transform, svgMeta, options) {
                 (0, utils_1.svgPointToCoordinate)(new Vector2_1.default(command.x, command.y), svgMeta, options, transform),
             ];
         }
-        else if (['L', 'V', 'H'].indexOf(pathCommand.code) !== -1) {
+        else if (["L", "V", "H"].indexOf(pathCommand.code) !== -1) {
             var command = pathCommand;
             currentLineString.push((0, utils_1.svgPointToCoordinate)(new Vector2_1.default(command.x, command.y), svgMeta, options, transform));
         }
-        else if (['C', 'S'].indexOf(pathCommand.code) !== -1) {
+        else if (["C", "S"].indexOf(pathCommand.code) !== -1) {
             var command = pathCommand;
             var p0_1 = new Vector2_1.default(command.x0, command.y0);
             var p1_1;
-            if (pathCommand.code === 'C') {
+            if (pathCommand.code === "C") {
                 p1_1 = new Vector2_1.default(command.x1, command.y1);
             }
             else {
-                p1_1 = ['C', 'S'].indexOf(previousCommand.code) !== -1 ? p0_1.add(p0_1.subtract(previousCurveHandle)) : p0_1;
+                p1_1 = ["C", "S"].indexOf(previousCommand.code) !== -1
+                    ? p0_1.add(p0_1.subtract(previousCurveHandle))
+                    : p0_1;
             }
             var p2_1 = new Vector2_1.default(command.x2, command.y2);
             var p3_1 = new Vector2_1.default(command.x, command.y);
@@ -575,22 +589,24 @@ function parseSVGPath(pathD, transform, svgMeta, options) {
             currentLineString = currentLineString.concat(curvePoints);
             previousCurveHandle = p2_1;
         }
-        else if (['Q', 'T'].indexOf(pathCommand.code) !== -1) {
+        else if (["Q", "T"].indexOf(pathCommand.code) !== -1) {
             var command = pathCommand;
             var p0_2 = new Vector2_1.default(command.x0, command.y0);
             var p1_2;
-            if (pathCommand.code === 'Q') {
+            if (pathCommand.code === "Q") {
                 p1_2 = new Vector2_1.default(command.x1, command.y1);
             }
             else {
-                p1_2 = ['Q', 'T'].indexOf(previousCommand.code) !== -1 ? p0_2.add(p0_2.subtract(previousCurveHandle)) : p0_2;
+                p1_2 = ["Q", "T"].indexOf(previousCommand.code) !== -1
+                    ? p0_2.add(p0_2.subtract(previousCurveHandle))
+                    : p0_2;
             }
             var p2_2 = new Vector2_1.default(command.x, command.y);
             var curvePoints = mathUtils.drawCurve(function (t) { return mathUtils.pointOnQuadraticBezierCurve(p0_2, p1_2, p2_2, t); }, options.subdivideThreshold).map(function (p) { return (0, utils_1.svgPointToCoordinate)(p, svgMeta, options, transform); });
             currentLineString = currentLineString.concat(curvePoints);
             previousCurveHandle = p1_2;
         }
-        else if (pathCommand.code === 'A') {
+        else if (pathCommand.code === "A") {
             var command = pathCommand;
             var p0_3 = new Vector2_1.default(command.x0, command.y0);
             var p1_3 = new Vector2_1.default(command.x, command.y);
@@ -602,7 +618,7 @@ function parseSVGPath(pathD, transform, svgMeta, options) {
             var curvePoints = mathUtils.drawCurve(function (t) { return mathUtils.pointOnEllipticalArc(p0_3, p1_3, rx_1, ry_1, xAxisRotation_1, largeArc_1, sweep_1, t); }, options.subdivideThreshold).map(function (p) { return (0, utils_1.svgPointToCoordinate)(p, svgMeta, options, transform); });
             currentLineString = currentLineString.concat(curvePoints);
         }
-        else if (pathCommand.code === 'Z') {
+        else if (pathCommand.code === "Z") {
             currentLineString.push(currentLineString[0]);
             output.polygons.push(currentLineString);
             currentLineString = [];
@@ -619,12 +635,14 @@ function parseSVGPath(pathD, transform, svgMeta, options) {
 var pathTransformer = function (input, svgMeta, options) {
     var _a = parseSVGPath(input.attributes.d, input.attributes.transform, svgMeta, options), points = _a.points, lineStrings = _a.lineStrings, polygons = _a.polygons;
     var features = [];
-    var properties = options.propertyMapper ? options.propertyMapper(input) : null;
+    var properties = options.propertyMapper
+        ? options.propertyMapper(input)
+        : null;
     if (points.length) {
         points.forEach(function (point) {
             var id = options.idMapper ? options.idMapper(input) : null;
             var geometry = {
-                type: 'Point',
+                type: "Point",
                 coordinates: point,
             };
             features.push((0, utils_1.createFeature)(geometry, id, properties));
@@ -634,7 +652,7 @@ var pathTransformer = function (input, svgMeta, options) {
         lineStrings.forEach(function (lineString) {
             var id = options.idMapper ? options.idMapper(input) : null;
             var geometry = {
-                type: 'LineString',
+                type: "LineString",
                 coordinates: lineString,
             };
             features.push((0, utils_1.createFeature)(geometry, id, properties));
@@ -644,7 +662,7 @@ var pathTransformer = function (input, svgMeta, options) {
         polygons.forEach(function (polygon) {
             var id = options.idMapper ? options.idMapper(input) : null;
             var geometry = {
-                type: 'Polygon',
+                type: "Polygon",
                 coordinates: [polygon],
             };
             features.push((0, utils_1.createFeature)(geometry, id, properties));
@@ -666,9 +684,11 @@ var polygonTransformer = function (node, svgMeta, options) {
         .map(function (p) { return (0, utils_1.svgPointToCoordinate)(p, svgMeta, options, node.attributes.transform); });
     points.push(points[0]);
     var id = options.idMapper ? options.idMapper(node) : null;
-    var properties = options.propertyMapper ? options.propertyMapper(node) : null;
+    var properties = options.propertyMapper
+        ? options.propertyMapper(node)
+        : null;
     var geometry = {
-        type: 'Polygon',
+        type: "Polygon",
         coordinates: [points],
     };
     return {
@@ -689,19 +709,21 @@ var polylineTransformer = function (input, svgMeta, options) {
     var geometry = null;
     if (points.length > 1) {
         geometry = {
-            type: 'LineString',
+            type: "LineString",
             coordinates: points,
         };
     }
     else if (points.length === 1) {
         geometry = {
-            type: 'Point',
+            type: "Point",
             coordinates: points[0],
         };
     }
     if (geometry) {
         var id = options.idMapper ? options.idMapper(input) : null;
-        var properties = options.propertyMapper ? options.propertyMapper(input) : null;
+        var properties = options.propertyMapper
+            ? options.propertyMapper(input)
+            : null;
         features.push((0, utils_1.createFeature)(geometry, id, properties));
     }
     return {
@@ -751,9 +773,11 @@ var rectTransformer = function (input, svgMeta, options) {
         ring.push(ring[0]);
     }
     var id = options.idMapper ? options.idMapper(input) : null;
-    var properties = options.propertyMapper ? options.propertyMapper(input) : null;
+    var properties = options.propertyMapper
+        ? options.propertyMapper(input)
+        : null;
     var geometry = {
-        type: 'Polygon',
+        type: "Polygon",
         coordinates: [
             ring.map(function (p) { return (0, utils_1.svgPointToCoordinate)(p, svgMeta, options, input.attributes.transform); }),
         ],
@@ -776,7 +800,7 @@ var math_utils_1 = require("./math-utils");
 var constants_1 = require("./constants");
 function createFeature(geometry, id, properties) {
     var feature = {
-        type: 'Feature',
+        type: "Feature",
         geometry: geometry,
         properties: properties,
     };
