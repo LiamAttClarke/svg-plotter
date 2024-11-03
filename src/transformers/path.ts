@@ -1,5 +1,5 @@
 import * as svgPathParser from 'svg-path-parser';
-import { SVGNodeTransformer } from '../types';
+import { ConvertSVGOptions, SVGMetaData, SVGNodeTransformer } from '../types';
 import { createFeature, svgPointToCoordinate } from '../utils';
 import Vector2 from '../Vector2';
 import * as mathUtils from '../math-utils';
@@ -20,29 +20,44 @@ interface QuadraticCurveToCommand extends svgPathParser.QuadraticCurveToCommand 
   y0: number;
 }
 
-/** Reference:  https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths */
-const pathTransformer: SVGNodeTransformer = (input, svgMeta, options) => {
-  const polygons: number[][][] = [];
-  const lineStrings: number[][][] = [];
-  const points: number[][] = [];
+interface ParsedSVGPath {
+  polygons: number[][][];
+  lineStrings: number[][][];
+  points: number[][];
+}
+
+function parseSVGPath(
+  pathD: string,
+  transform: string,
+  svgMeta: SVGMetaData,
+  options: ConvertSVGOptions,
+): ParsedSVGPath {
+  const output: ParsedSVGPath = {
+    polygons: [],
+    lineStrings: [],
+    points: [],
+  };
+
   let currentLineString: number[][] = [];
   let previousCurveHandle: Vector2 = null;
-  const pathCommands = svgPathParser.makeAbsolute(svgPathParser.parseSVG(input.attributes.d));
+
+  const pathCommands = svgPathParser.makeAbsolute(svgPathParser.parseSVG(pathD));
+
   pathCommands.forEach((pathCommand, i) => {
     const previousCommand = (i > 0) ? pathCommands[i - 1] : null;
     if (pathCommand.code === 'M') {
       const command = pathCommand as svgPathParser.MoveToCommand;
       if (currentLineString.length === 1) {
-        points.push(currentLineString[0]);
+        output.points.push(currentLineString[0]);
       } else if (currentLineString.length > 1) {
-        lineStrings.push(currentLineString);
+        output.lineStrings.push(currentLineString);
       }
       currentLineString = [
         svgPointToCoordinate(
           new Vector2(command.x, command.y),
           svgMeta,
           options,
-          input.attributes.transform,
+          transform,
         ),
       ];
     } else if (['L', 'V', 'H'].indexOf(pathCommand.code) !== -1) {
@@ -51,7 +66,7 @@ const pathTransformer: SVGNodeTransformer = (input, svgMeta, options) => {
         new Vector2(command.x, command.y),
         svgMeta,
         options,
-        input.attributes.transform,
+        transform,
       ));
     } else if (['C', 'S'].indexOf(pathCommand.code) !== -1) {
       const command = pathCommand as CurveToCommand;
@@ -67,7 +82,7 @@ const pathTransformer: SVGNodeTransformer = (input, svgMeta, options) => {
       const curvePoints = mathUtils.drawCurve(
         (t: number) => mathUtils.pointOnCubicBezierCurve(p0, p1, p2, p3, t),
         options.subdivideThreshold,
-      ).map((p) => svgPointToCoordinate(p, svgMeta, options, input.attributes.transform));
+      ).map((p) => svgPointToCoordinate(p, svgMeta, options, transform));
       currentLineString = currentLineString.concat(curvePoints);
       previousCurveHandle = p2;
     } else if (['Q', 'T'].indexOf(pathCommand.code) !== -1) {
@@ -83,7 +98,7 @@ const pathTransformer: SVGNodeTransformer = (input, svgMeta, options) => {
       const curvePoints = mathUtils.drawCurve(
         (t: number) => mathUtils.pointOnQuadraticBezierCurve(p0, p1, p2, t),
         options.subdivideThreshold,
-      ).map((p) => svgPointToCoordinate(p, svgMeta, options, input.attributes.transform));
+      ).map((p) => svgPointToCoordinate(p, svgMeta, options, transform));
       currentLineString = currentLineString.concat(curvePoints);
       previousCurveHandle = p1;
     } else if (pathCommand.code === 'A') {
@@ -100,21 +115,34 @@ const pathTransformer: SVGNodeTransformer = (input, svgMeta, options) => {
           p0, p1, rx, ry, xAxisRotation, largeArc, sweep, t,
         ),
         options.subdivideThreshold,
-      ).map((p) => svgPointToCoordinate(p, svgMeta, options, input.attributes.transform));
+      ).map((p) => svgPointToCoordinate(p, svgMeta, options, transform));
       currentLineString = currentLineString.concat(curvePoints);
     } else if (pathCommand.code === 'Z') {
       currentLineString.push(currentLineString[0]);
-      polygons.push(currentLineString);
+      output.polygons.push(currentLineString);
       currentLineString = [];
     }
   });
   if (currentLineString.length === 1) {
-    points.push(currentLineString[0]);
+    output.points.push(currentLineString[0]);
   } else if (currentLineString.length > 1) {
-    lineStrings.push(currentLineString);
+    output.lineStrings.push(currentLineString);
   }
+
+  return output;
+}
+
+/** Reference:  https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths */
+const pathTransformer: SVGNodeTransformer = (input, svgMeta, options) => {
+  const {
+    points,
+    lineStrings,
+    polygons,
+  } = parseSVGPath(input.attributes.d, input.attributes.transform, svgMeta, options);
+
   const features: GeoJSON.Feature[] = [];
   const properties = options.propertyMapper ? options.propertyMapper(input) : null;
+
   if (points.length) {
     points.forEach((point) => {
       const id = options.idMapper ? options.idMapper(input) : null;
@@ -135,21 +163,16 @@ const pathTransformer: SVGNodeTransformer = (input, svgMeta, options) => {
       features.push(createFeature(geometry, id, properties));
     });
   }
+  // TODO: Map >1 polygons to a GeoJSON MultiPolygon feature
   if (polygons.length) {
-    const polygonFeatures = polygons.map((polygon) => {
+    polygons.forEach((polygon) => {
       const id = options.idMapper ? options.idMapper(input) : null;
       const geometry: GeoJSON.Polygon = {
         type: 'Polygon',
         coordinates: [polygon],
       };
-      return createFeature(geometry, id, properties);
+      features.push(createFeature(geometry, id, properties));
     });
-    features.push(polygonFeatures[0]);
-    // features.push(
-    //   polygonFeatures.length > 1
-    //     ? compositePolygons(polygonFeatures, properties)
-    //     : polygonFeatures[0],
-    // );
   }
   return {
     features,

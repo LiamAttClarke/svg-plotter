@@ -4,30 +4,32 @@ var svgPathParser = require("svg-path-parser");
 var utils_1 = require("../utils");
 var Vector2_1 = require("../Vector2");
 var mathUtils = require("../math-utils");
-var pathTransformer = function (input, svgMeta, options) {
-    var polygons = [];
-    var lineStrings = [];
-    var points = [];
+function parseSVGPath(pathD, transform, svgMeta, options) {
+    var output = {
+        polygons: [],
+        lineStrings: [],
+        points: [],
+    };
     var currentLineString = [];
     var previousCurveHandle = null;
-    var pathCommands = svgPathParser.makeAbsolute(svgPathParser.parseSVG(input.attributes.d));
+    var pathCommands = svgPathParser.makeAbsolute(svgPathParser.parseSVG(pathD));
     pathCommands.forEach(function (pathCommand, i) {
         var previousCommand = (i > 0) ? pathCommands[i - 1] : null;
         if (pathCommand.code === 'M') {
             var command = pathCommand;
             if (currentLineString.length === 1) {
-                points.push(currentLineString[0]);
+                output.points.push(currentLineString[0]);
             }
             else if (currentLineString.length > 1) {
-                lineStrings.push(currentLineString);
+                output.lineStrings.push(currentLineString);
             }
             currentLineString = [
-                (0, utils_1.svgPointToCoordinate)(new Vector2_1.default(command.x, command.y), svgMeta, options, input.attributes.transform),
+                (0, utils_1.svgPointToCoordinate)(new Vector2_1.default(command.x, command.y), svgMeta, options, transform),
             ];
         }
         else if (['L', 'V', 'H'].indexOf(pathCommand.code) !== -1) {
             var command = pathCommand;
-            currentLineString.push((0, utils_1.svgPointToCoordinate)(new Vector2_1.default(command.x, command.y), svgMeta, options, input.attributes.transform));
+            currentLineString.push((0, utils_1.svgPointToCoordinate)(new Vector2_1.default(command.x, command.y), svgMeta, options, transform));
         }
         else if (['C', 'S'].indexOf(pathCommand.code) !== -1) {
             var command = pathCommand;
@@ -41,7 +43,7 @@ var pathTransformer = function (input, svgMeta, options) {
             }
             var p2_1 = new Vector2_1.default(command.x2, command.y2);
             var p3_1 = new Vector2_1.default(command.x, command.y);
-            var curvePoints = mathUtils.drawCurve(function (t) { return mathUtils.pointOnCubicBezierCurve(p0_1, p1_1, p2_1, p3_1, t); }, options.subdivideThreshold).map(function (p) { return (0, utils_1.svgPointToCoordinate)(p, svgMeta, options, input.attributes.transform); });
+            var curvePoints = mathUtils.drawCurve(function (t) { return mathUtils.pointOnCubicBezierCurve(p0_1, p1_1, p2_1, p3_1, t); }, options.subdivideThreshold).map(function (p) { return (0, utils_1.svgPointToCoordinate)(p, svgMeta, options, transform); });
             currentLineString = currentLineString.concat(curvePoints);
             previousCurveHandle = p2_1;
         }
@@ -56,7 +58,7 @@ var pathTransformer = function (input, svgMeta, options) {
                 p1_2 = ['Q', 'T'].indexOf(previousCommand.code) !== -1 ? p0_2.add(p0_2.subtract(previousCurveHandle)) : p0_2;
             }
             var p2_2 = new Vector2_1.default(command.x, command.y);
-            var curvePoints = mathUtils.drawCurve(function (t) { return mathUtils.pointOnQuadraticBezierCurve(p0_2, p1_2, p2_2, t); }, options.subdivideThreshold).map(function (p) { return (0, utils_1.svgPointToCoordinate)(p, svgMeta, options, input.attributes.transform); });
+            var curvePoints = mathUtils.drawCurve(function (t) { return mathUtils.pointOnQuadraticBezierCurve(p0_2, p1_2, p2_2, t); }, options.subdivideThreshold).map(function (p) { return (0, utils_1.svgPointToCoordinate)(p, svgMeta, options, transform); });
             currentLineString = currentLineString.concat(curvePoints);
             previousCurveHandle = p1_2;
         }
@@ -69,21 +71,25 @@ var pathTransformer = function (input, svgMeta, options) {
             var xAxisRotation_1 = -command.xAxisRotation;
             var largeArc_1 = command.largeArc;
             var sweep_1 = !command.sweep;
-            var curvePoints = mathUtils.drawCurve(function (t) { return mathUtils.pointOnEllipticalArc(p0_3, p1_3, rx_1, ry_1, xAxisRotation_1, largeArc_1, sweep_1, t); }, options.subdivideThreshold).map(function (p) { return (0, utils_1.svgPointToCoordinate)(p, svgMeta, options, input.attributes.transform); });
+            var curvePoints = mathUtils.drawCurve(function (t) { return mathUtils.pointOnEllipticalArc(p0_3, p1_3, rx_1, ry_1, xAxisRotation_1, largeArc_1, sweep_1, t); }, options.subdivideThreshold).map(function (p) { return (0, utils_1.svgPointToCoordinate)(p, svgMeta, options, transform); });
             currentLineString = currentLineString.concat(curvePoints);
         }
         else if (pathCommand.code === 'Z') {
             currentLineString.push(currentLineString[0]);
-            polygons.push(currentLineString);
+            output.polygons.push(currentLineString);
             currentLineString = [];
         }
     });
     if (currentLineString.length === 1) {
-        points.push(currentLineString[0]);
+        output.points.push(currentLineString[0]);
     }
     else if (currentLineString.length > 1) {
-        lineStrings.push(currentLineString);
+        output.lineStrings.push(currentLineString);
     }
+    return output;
+}
+var pathTransformer = function (input, svgMeta, options) {
+    var _a = parseSVGPath(input.attributes.d, input.attributes.transform, svgMeta, options), points = _a.points, lineStrings = _a.lineStrings, polygons = _a.polygons;
     var features = [];
     var properties = options.propertyMapper ? options.propertyMapper(input) : null;
     if (points.length) {
@@ -107,15 +113,14 @@ var pathTransformer = function (input, svgMeta, options) {
         });
     }
     if (polygons.length) {
-        var polygonFeatures = polygons.map(function (polygon) {
+        polygons.forEach(function (polygon) {
             var id = options.idMapper ? options.idMapper(input) : null;
             var geometry = {
                 type: 'Polygon',
                 coordinates: [polygon],
             };
-            return (0, utils_1.createFeature)(geometry, id, properties);
+            features.push((0, utils_1.createFeature)(geometry, id, properties));
         });
-        features.push(polygonFeatures[0]);
     }
     return {
         features: features,
