@@ -11,11 +11,11 @@ button {
   padding: 8px 16px;
   background-color: white;
   border: solid 1px #CCC;
-  border-radius: 5px;  
+  border-radius: 5px;
   cursor: pointer;
 }
 
-button > .icon {
+button>.icon {
   margin-right: 8px;
 }
 
@@ -57,14 +57,14 @@ input:focus {
   cursor: pointer;
 }
 
-.input--image > input[type="file"] {
+.input--image>input[type="file"] {
   position: absolute;
   top: 0;
   left: 0;
   opacity: 0;
 }
 
-.input--image > .placeholder {
+.input--image>.placeholder {
   position: absolute;
   top: 4px;
   left: 4px;
@@ -75,7 +75,7 @@ input:focus {
   border: solid 1px #CCC;
 }
 
-.input--image > img {
+.input--image>img {
   max-width: 100%;
   max-height: 100%;
   vertical-align: middle;
@@ -85,12 +85,12 @@ input:focus {
   display: flex;
 }
 
-.button-group > * {
+.button-group>* {
   flex-grow: 1;
   margin-right: 8px;
 }
 
-.button-group > *:last-child {
+.button-group>*:last-child {
   margin-right: 0;
 }
 
@@ -108,7 +108,7 @@ input:focus {
   pointer-events: none;
 }
 
-.map-overlay > .top-left {  
+.map-overlay>.top-left {
   position: absolute;
   top: 16px;
   left: 16px;
@@ -116,10 +116,10 @@ input:focus {
 }
 
 .panel {
-  max-width: 360px;  
+  max-width: 360px;
   background-color: #EEE;
   border-radius: 8px;
-  box-shadow: 0 1px 10px #222;  
+  box-shadow: 0 1px 10px #222;
   display: flex;
   flex-direction: column;
 }
@@ -145,8 +145,14 @@ input:focus {
 }
 
 .site-title {
-  margin-top: 0;
-  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.site-title>h1 {
+  margin: 0;
   font-size: 1.5rem;
   font-weight: normal;
 }
@@ -185,12 +191,12 @@ input:focus {
   display: flex;
 }
 
-.input-group .row > * {
+.input-group .row>* {
   flex-grow: 1;
   margin-right: 8px;
 }
 
-.input-group .row > *:last-child {
+.input-group .row>*:last-child {
   margin-right: 0;
 }
 
