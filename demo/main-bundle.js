@@ -801,7 +801,7 @@ function svgPointToCoordinate(point, svgMeta, options, svgTransform) {
         point1 = new Vector2_1.default(transformedPoint.x, transformedPoint.y);
     }
     var aspect = svgMeta.width / svgMeta.height;
-    var outputPoint = new Vector2_1.default((point1.x - svgMeta.x) / (svgMeta.width * aspect), (point1.y - svgMeta.y) / svgMeta.height);
+    var outputPoint = new Vector2_1.default((point1.x - svgMeta.x) / svgMeta.width, (point1.y - svgMeta.y) / (svgMeta.height * aspect));
     var scale = options.width / constants_1.EARTH_CIRCUMFERENCE;
     var centerPoint = (0, projections_1.mercator)({ lon: options.center.longitude, lat: options.center.latitude });
     outputPoint = outputPoint
