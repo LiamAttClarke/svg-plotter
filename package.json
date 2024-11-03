@@ -4,7 +4,7 @@
     "description": "Convert SVG files to GeoJSON",
     "main": "dist/index.js",
     "bin": {
-        "svg-plotter": "./bin/svg-plotter.js"
+        "svg-plotter": "bin/svg-plotter.js"
     },
     "scripts": {
         "postinstall": "husky install",
