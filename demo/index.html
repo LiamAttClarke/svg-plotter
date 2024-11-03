@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,9 +9,12 @@
   <link rel="stylesheet" href="normalize.css">
   <link rel="stylesheet" href="main.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:300,400,700">
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous"></head>
-  <link rel="stylesheet" href="https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.1/mapbox-gl.css" />
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css"
+    integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
 </head>
+<link rel="stylesheet" href="https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.1/mapbox-gl.css" />
+</head>
+
 <body>
   <div id="previewMap"></div>
   <div class="map-overlay">
@@ -19,7 +23,8 @@
         <h1 class="site-title">SVG Plotter</h1>
         <p class="site-info">Convert SVG files to GeoJSON</p>
         <p class="site-info">By: <a href="https://atticus.dev/">atticus.dev</a></p>
-        <p class="site-info">Source: <a href="https://github.com/LiamAttClarke/svg-plotter">github.com/LiamAttClarke/svg-plotter</a></p>
+        <p class="site-info">Source: <a
+            href="https://github.com/LiamAttClarke/svg-plotter">github.com/LiamAttClarke/svg-plotter</a></p>
       </header>
       <div class="panel__content">
         <label name="svgFile" class="input--image">
@@ -31,49 +36,31 @@
           <label for="centerLatitudeInput">Center:</label>
           <div class="row">
             <div>
-              <input
-                id="centerLatitudeInput"
-                name="centerLatitude"
-                type="number"
-                value="43.761539"
-                step="1"
-                size="10"
+              <input id="centerLatitudeInput" name="centerLatitude" type="number" value="43.761539" step="1" size="10"
                 required />
               <p class="hint">Latitude</p>
             </div>
             <div>
-              <input
-                id="centerLongitudeInput"
-                name="centerLongitude"
-                type="number"
-                value="-79.411079"
-                step="1"
-                size="10"
-                required />
+              <input id="centerLongitudeInput" name="centerLongitude" type="number" value="-79.411079" step="1"
+                size="10" required />
               <p class="hint">Longitude</p>
             </div>
           </div>
         </div>
         <div class="input-group">
           <label for="widthInput">Width:</label>
-          <input
-            id="widthInput"
-            name="width"
-            type="number"
-            value="1000000"
-            step="1000"
-            size="10"
-            required />
+          <input id="widthInput" name="width" type="number" value="1000000" step="1000" size="10" required />
           <p class="hint">Metres</p>
         </div>
         <div class="input-group">
           <label for="bearingInput">Bearing:</label>
           <input id="bearingInput" name="bearing" type="number" value="0" step="1" size="3">
-          <p class="hint">Angle in degrees to rotate geometry clockwise around it's center.</p>
+          <p class="hint">Angle in degrees to rotate geometry clockwise around its center.</p>
         </div>
         <div class="input-group">
           <label for="subdivideThresholdInput">Curve Subdivide Threshold:</label>
-          <input id="subdivideThresholdInput" name="subdivideThreshold" type="number" value="5" step="1" size="2" required />
+          <input id="subdivideThresholdInput" name="subdivideThreshold" type="number" value="5" step="1" size="2"
+            required />
           <p class="hint">Angular threshold for subdividing curves. Smaller values will produce smoother curves.</p>
         </div>
       </div>
@@ -92,4 +79,5 @@
   </div>
 </body>
 <script src="main-bundle.js"></script>
+
 </html>

@@ -25,7 +25,7 @@ export interface ConvertSVGOptions {
   center?: Coordinate,
   /** Width in metres. (default: 1000e3 ie. 1000km) */
   width?: number,
-  /** Angle in degrees to rotate geometry clockwise around it's center. (default: 0) */
+  /** Angle in degrees to rotate geometry clockwise around its center. (default: 0) */
   bearing?: number,
   /** Angle in degrees at which to subdivide curves.
    *  Decrease this number for smoother curves. (Default: 5) */
