@@ -7,7 +7,7 @@ body {
   font-family: sans-serif;
 }
 
-button {
+.button {
   padding: 8px 16px;
   background-color: white;
   border: solid 1px #CCC;
@@ -15,15 +15,15 @@ button {
   cursor: pointer;
 }
 
-button>.icon {
+.button>.icon {
   margin-right: 8px;
 }
 
-button:disabled {
+.button:disabled {
   cursor: default;
 }
 
-button.primary {
+.button.primary {
   background-color: #55acee;
   border-color: #4f99d3;
   color: white;
