@@ -52,8 +52,8 @@ export function svgPointToCoordinate(
   // Normalize point to [0,1] range
   const aspect = svgMeta.width / svgMeta.height;
   let outputPoint = new Vector2(
-    (point1.x - svgMeta.x) / (svgMeta.width * aspect),
-    (point1.y - svgMeta.y) / svgMeta.height,
+    (point1.x - svgMeta.x) / svgMeta.width,
+    (point1.y - svgMeta.y) / (svgMeta.height * aspect),
   );
   // Scale, rotate, and offset point
   const scale = options.width / EARTH_CIRCUMFERENCE;

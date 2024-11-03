@@ -65,7 +65,10 @@ describe('svg-plotter', () => {
       expect(errors).to.be.empty;
       const expectedSVGType = ['rect', 'rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon', 'path'];
       geojson.features.forEach((f, i) => {
-        expect(f.properties.svgType).to.equal(expectedSVGType[i]);
+        expect(f.properties).to.not.be.null;
+        if (f.properties) {
+          expect(f.properties.svgType).to.equal(expectedSVGType[i]);
+        }
       });
     });
 
@@ -79,7 +82,7 @@ describe('svg-plotter', () => {
     });
 
     it('should return a list of errors that include all skipped geometry.', () => {
-      const { geojson, errors } = convertSVG(SVG_PATTERN);
+      const { errors } = convertSVG(SVG_PATTERN);
       expect(errors).to.include('Skipping unsupported node: pattern');
     });
 
