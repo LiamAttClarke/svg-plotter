@@ -60,7 +60,7 @@ function getSVGMetadata(parsedSVG) {
         height: 0,
     };
     if (parsedSVG.attributes.viewBox) {
-        var coords = parsedSVG.attributes.viewBox.split(' ');
+        var coords = parsedSVG.attributes.viewBox.split(" ");
         svgMeta.x = parseFloat(coords[0]);
         svgMeta.y = parseFloat(coords[1]);
         svgMeta.width = parseFloat(coords[2]) - svgMeta.x;
@@ -73,7 +73,7 @@ function getSVGMetadata(parsedSVG) {
         svgMeta.height = parseFloat(parsedSVG.attributes.height) - svgMeta.y;
     }
     else {
-        throw new Error('SVG must have a viewBox or width/height attributes.');
+        throw new Error("SVG must have a viewBox or width/height attributes.");
     }
     return svgMeta;
 }
@@ -84,7 +84,7 @@ function convertSVG(input, options) {
     var svgMeta = getSVGMetadata(parsedSVG);
     var _a = svgNodeToFeatures(parsedSVG, svgMeta, __assign(__assign({}, DEFAULT_CONVERT_OPTIONS), options)), features = _a.features, errors = _a.errors;
     return {
-        geojson: { type: 'FeatureCollection', features: features },
+        geojson: { type: "FeatureCollection", features: features },
         errors: errors,
     };
 }

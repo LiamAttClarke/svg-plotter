@@ -6,9 +6,11 @@ var polygonTransformer = function (node, svgMeta, options) {
         .map(function (p) { return (0, utils_1.svgPointToCoordinate)(p, svgMeta, options, node.attributes.transform); });
     points.push(points[0]);
     var id = options.idMapper ? options.idMapper(node) : null;
-    var properties = options.propertyMapper ? options.propertyMapper(node) : null;
+    var properties = options.propertyMapper
+        ? options.propertyMapper(node)
+        : null;
     var geometry = {
-        type: 'Polygon',
+        type: "Polygon",
         coordinates: [points],
     };
     return {

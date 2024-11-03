@@ -37,9 +37,11 @@ var rectTransformer = function (input, svgMeta, options) {
         ring.push(ring[0]);
     }
     var id = options.idMapper ? options.idMapper(input) : null;
-    var properties = options.propertyMapper ? options.propertyMapper(input) : null;
+    var properties = options.propertyMapper
+        ? options.propertyMapper(input)
+        : null;
     var geometry = {
-        type: 'Polygon',
+        type: "Polygon",
         coordinates: [
             ring.map(function (p) { return (0, utils_1.svgPointToCoordinate)(p, svgMeta, options, input.attributes.transform); }),
         ],
