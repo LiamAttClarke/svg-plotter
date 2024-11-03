@@ -13,6 +13,7 @@ let svgInput = null;
 let geojsonOutput = null;
 
 // Setup map preview
+// eslint-disable-next-line max-len
 mapbox.accessToken = "pk.eyJ1IjoibGlhbWF0dGNsYXJrZSIsImEiOiJjaXEzN2VidjUwMGFybmptNHVtNHB3cGptIn0.ZSHWqW1AMlyE3A6FlqA0ww";
 const map = new mapbox.Map({
     container: "previewMap",
@@ -59,9 +60,10 @@ map.on("load", () => {
 svgFileInput.addEventListener("change", (event) => {
     if (event.target.files.length) {
         const fileReader = new FileReader();
-        fileReader.onload = function(event) {
+        fileReader.onload = (event) => {
             svgInput = event.target.result;
-            svgPreviewImage.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(event.target.result)));
+            const uri = btoa(unescape(encodeURIComponent(event.target.result)));
+            svgPreviewImage.src = `data:image/svg+xml;base64,${uri}`;
         };
         fileReader.readAsText(event.target.files[0]);
     }
@@ -99,7 +101,10 @@ downloadButton.addEventListener("click", (event) => {
     event.preventDefault();
     if (geojsonOutput) {
         const formData = new FormData(convertForm);
-        const blob = new Blob([JSON.stringify(geojsonOutput, null, 2)], { type: "application/json" });
+        const blob = new Blob(
+            [JSON.stringify(geojsonOutput, null, 2)],
+            { type: "application/json" },
+        );
         const fileName = formData.get("svgFile").name.replace(".svg", ".geojson");
         FileSaver.saveAs(blob, fileName);
     }

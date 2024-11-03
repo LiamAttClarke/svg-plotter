@@ -32,7 +32,7 @@ module.exports = {
         "import/extensions": 0,
         "@typescript-eslint/type-annotation-spacing": 2,
         "indent": ["error", 4],
-        "max-len": ["error", 200],
+        "max-len": ["error", 100],
         "quotes": ["error", "double"],
         "operator-linebreak": [2, "before"],
         "require-jsdoc": 0,
@@ -48,6 +48,14 @@ module.exports = {
             rules: {
                 "@typescript-eslint/no-var-requires": 0,
                 "no-console": 0,
+            }
+        },
+        {
+            files: [
+                "tests/**/*",
+            ],
+            rules: {
+                "max-len": 0
             }
         }
     ]

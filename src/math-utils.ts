@@ -121,7 +121,8 @@ export function pointOnEllipticalArc(
     // If the endpoints are identical,
     // then this is equivalent to omitting the elliptical arc segment entirely.
     if (p0.x === p1.x && p0.y === p1.y) return p0;
-    // If rx = 0 or ry = 0 then this arc is treated as a straight line segment joining the endpoints.
+    // If rx = 0 or ry = 0 then this arc is treated as a straight line segment
+    // joining the endpoints.
     if (!rx1 || !ry1) return pointOnLine(p0, p1, t1);
     // Following 'Conversion from endpoint to center parameterization'
     // http://www.w3.org/TR/SVG/implnote.html#ArcConversionEndpointToCenter

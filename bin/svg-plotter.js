@@ -8,9 +8,12 @@ const { convertSVG } = require("../dist");
 commander
     .version("0.0.0")
     .usage("<input> [outputPath] [options]")
+    // eslint-disable-next-line max-len
     .option("-c, --center [center]", "Geographic coordinate to center the SVG geometry around. (default: 0,0)")
     .option("-w, --width [width]", "Width in metres (default: 1000e3 ie. 1000km)")
+    // eslint-disable-next-line max-len
     .option("-b, --bearing [bearing]", "Angle in degrees to rotate geometry clockwise around it's center. (default: 0)")
+    // eslint-disable-next-line max-len
     .option("-t, --subdivide-threshold [subdivideThreshold]", "Angle in degrees at which to subdivide curves. Decrease this number for smoother curves. (Default: 5)")
     .option("-p, --pretty", "Pretty print output")
     .parse(process.argv);
